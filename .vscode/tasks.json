@@ -21,7 +21,7 @@
             "type": "shell",
             "dependsOn": ["Compile C++"],
             "dependsOrder": "sequence",
-            "command": "build\\QC-Linear-Algebra-Portable-Distribution\\QC_Linear_Algebra.exe",
+            "command": "build\\QC-LASER-Portable-Distribution\\QC-LASER.exe",
             "presentation": {
                 "panel": "dedicated"
             },

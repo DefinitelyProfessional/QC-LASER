@@ -2,7 +2,7 @@
 # cmake --build build
 
 cmake_minimum_required(VERSION 3.20)
-project(QC_Linear_Algebra CXX)
+project(QC-LASER CXX)
 
 # Enforce modern C++ standards
 set(CMAKE_CXX_STANDARD 17)
@@ -14,10 +14,10 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 # ---------------------------------------------------------
 # PORTABLE BUNDLE CONFIGURATION
 # ---------------------------------------------------------
-set(BUNDLE_DIR "${CMAKE_BINARY_DIR}/QC-Linear-Algebra-Portable-Distribution")
+set(BUNDLE_DIR "${CMAKE_BINARY_DIR}/QC-LASER-Portable-Distribution")
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${BUNDLE_DIR}")
 file(MAKE_DIRECTORY "${BUNDLE_DIR}/assets")
-file(MAKE_DIRECTORY "${BUNDLE_DIR}/saved_data")
+file(MAKE_DIRECTORY "${BUNDLE_DIR}/saved-data")
 # ---------------------------------------------------------
 
 # Locate system graphics dependencies via MSYS2 pacman
@@ -30,7 +30,8 @@ set(APP_SOURCES
     src/main.cpp
     src/headers/math-core/function-definitions.hpp
     src/headers/math-core/variable-definitions.hpp
-    src/headers/ui-utilities/general-ui-utilities.hpp
+    src/headers/ui-utilities/general-utilities.hpp
+    src/headers/ui-utilities/stage-utilities.hpp
 )
 
 # Explicitly map the Dear ImGui sources

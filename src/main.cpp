@@ -8,7 +8,7 @@ void CoreEngine_ComplexOperation(int inputParameter) {
 
 int main() {
     // IMGUI SUBSYSTEMS INITIALIZATION
-    GLFWwindow* window = STAGE::InitializeApplication(750, 1000, "QC Linear Algebra");
+    GLFWwindow* window = STAGE::InitializeApplication(750, 1000, "QC Linear Algebra Sandbox Engine R.");
     if (!window) {
         std::cerr << "Fatal Error: Failed to initialize application stages." << std::endl;
         return -1;
