@@ -1,16 +1,42 @@
 #include "headers/ui-utilities/stage-utilities.hpp"
+#include "headers/ui-utilities/general-utilities.hpp"
 #include <iostream>
 
+void CoreEngine_ComplexOperation(int inputParameter) {
+    std::cout << "[ENGINE CORE] Processing data block of size: " << inputParameter << std::endl;
+}
+
 int main() {
-    // Boot up imgui subsystems
-    GLFWwindow* window = STAGE::InitializeApplication(1920, 1200, "QC Linear Algebra");
+    // IMGUI SUBSYSTEMS INITIALIZATION
+    GLFWwindow* window = STAGE::InitializeApplication(750, 1000, "QC Linear Algebra");
     if (!window) {
         std::cerr << "Fatal Error: Failed to initialize application stages." << std::endl;
         return -1;
     }
     ImVec4 clear_color = ImVec4(0.12f, 0.12f, 0.14f, 1.00f);
 
-    // 2. The Core Interactive Loop
+    UI::UI_ModuleName_Controller myCustomUI;
+
+    myCustomUI.Event_OnSimpleActionTriggered = [&]() {
+        std::cout << "[CALLBACK] The simple button was clicked." << std::endl;
+        std::cout << "[CALLBACK] Current text buffer reads: " << myCustomUI.State_TextBuffer << std::endl;
+    };
+
+    myCustomUI.Event_OnDataActionTriggered = [&](int passedValue) {
+        std::cout << "[CALLBACK] The data button was clicked. Relaying to core..." << std::endl;
+        // The UI knows nothing about 'CoreEngine_ComplexOperation', but it triggers it here!
+        CoreEngine_ComplexOperation(passedValue);
+    };
+
+    myCustomUI.Event_OnToggleStateChanged = [&](bool newState) {
+        if (newState) {
+            std::cout << "[CALLBACK] Engine Feature X Enabled!" << std::endl;
+        } else {
+            std::cout << "[CALLBACK] Engine Feature X Disabled!" << std::endl;
+        }
+    };
+
+    // CORE IMGUI RENDER LOOP
     while (!glfwWindowShouldClose(window)) {
         glfwPollEvents();
 
@@ -23,6 +49,7 @@ int main() {
         // ENGINE UI & EVENT LISTENERS
         // -----------------------------------------------------------
         
+        myCustomUI.RenderUI();
         ImGui::Begin("Matrix Operations");
         ImGui::Text("Welcome to the Linear Algebra Engine.");
         ImGui::Separator();
@@ -38,8 +65,8 @@ int main() {
         ImGui::ShowDemoWindow();
 
         // -----------------------------------------------------------
-        
         // Finalize geometry and push to the GPU
+        // -----------------------------------------------------------
         ImGui::Render();
         int display_w, display_h;
         glfwGetFramebufferSize(window, &display_w, &display_h);
