@@ -36,6 +36,51 @@ int main() {
         }
     };
 
+    UI::MatrixEngineUI engineInterface;
+
+    // Bind the execution lambda
+    engineInterface.Event_DispatchComputation = [&](int inputSize) {
+        
+        // We capture 'inputSize' by value (a copy). This is crucial! 
+        // We do not pass a pointer to the UI state, because the UI state might change.
+        
+        std::thread backgroundWorker([&engineInterface, inputSize]() {
+            // ---------------------------------------------------------
+            // STAGE 1: ISOLATED COMPUTATION (NO MUTEX LOCK REQUIRED)
+            // ---------------------------------------------------------
+            // This runs entirely independent of the main thread. 
+            // We use local variables so there is zero risk of a race condition.
+            
+            int localComputedSize = inputSize * inputSize; // Arbitrary math
+            std::string localLog = "Successfully inverted a system of size " + std::to_string(inputSize);
+            
+            // Simulate heavy math (5 seconds)
+            std::this_thread::sleep_for(std::chrono::seconds(5));
+            
+            // ---------------------------------------------------------
+            // STAGE 2: MEMORY HANDOFF (MUTEX LOCK REQUIRED)
+            // ---------------------------------------------------------
+            // The math is done. Now we must write to the shared state.
+            // We lock the mutex just long enough to copy our local variables into the class.
+            
+            {
+                std::lock_guard<std::mutex> lock(engineInterface.dataMutex);
+                engineInterface.latestResult.finalMatrixSize = localComputedSize;
+                engineInterface.latestResult.computationLog = localLog;
+            } // Mutex is instantly unlocked here as the lock_guard goes out of scope
+
+            // ---------------------------------------------------------
+            // STAGE 3: SIGNAL THE UI
+            // ---------------------------------------------------------
+            // Flip the atomic flags to notify the main loop.
+            engineInterface.hasNewResult.store(true);
+            engineInterface.isComputing.store(false);
+            
+        });
+
+        backgroundWorker.detach(); // Free the thread from the main execution context
+    };
+
     // CORE IMGUI RENDER LOOP
     while (!glfwWindowShouldClose(window)) {
         glfwPollEvents();
@@ -48,8 +93,8 @@ int main() {
         // -----------------------------------------------------------
         // ENGINE UI & EVENT LISTENERS
         // -----------------------------------------------------------
-        
         myCustomUI.RenderUI();
+        engineInterface.RenderUI();
         ImGui::Begin("Matrix Operations");
         ImGui::Text("Welcome to the Linear Algebra Engine.");
         ImGui::Separator();
@@ -73,7 +118,6 @@ int main() {
         glViewport(0, 0, display_w, display_h);
         glClearColor(clear_color.x * clear_color.w, clear_color.y * clear_color.w, clear_color.z * clear_color.w, clear_color.w);
         glClear(GL_COLOR_BUFFER_BIT);
-        
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
         glfwSwapBuffers(window);
     }
