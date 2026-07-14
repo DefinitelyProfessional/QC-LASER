@@ -33,7 +33,7 @@ this repository contains a `.vscode` directory to help you set up build and run 
 ---
 
 ## Development environment
-Please be informed the latest update migrates from a mingw64 legacy build to modern ucrt64. This change made it so the `CMakeLists.txt` file will handle finding and linkking the required pdcurses library automatically. You may need to install the `glfw` package for your dev environment if you are using a different compiler or IDE. As for the one used in this project, it is `MSYS2` with `Ninja` build system. You can install the required packages by running the following command in your MSYS2 terminal:
+`CMakeLists.txt` file will handle finding and linking required libraries automatically. You may need to install the `glfw` package for your dev environment if you are using a different compiler or IDE. As for the one used in this project, it is `MSYS2` with `Ninja` build system. You can install the required packages by running the following command in your MSYS2 terminal:
 ```bash
 pacman -S mingw-w64-ucrt-x86_64-toolchain mingw-w64-ucrt-x86_64-cmake mingw-w64-ucrt-x86_64-ninja mingw-w64-ucrt-x86_64-glfw
 ```
