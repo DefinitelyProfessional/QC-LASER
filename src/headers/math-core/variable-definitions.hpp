@@ -11,10 +11,10 @@
 class Matrix {
 protected:
     // Prefixed with m_ to completely avoid naming conflicts with accessor methods
-    std::vector<std::complex<double>> m_data;
     size_t m_rows;
     size_t m_cols;
     std::string m_id;
+    std::vector<std::complex<double>> m_data;
     
     // Cached quantum metadata properties
     bool m_is_unitary;
@@ -41,9 +41,6 @@ public:
         m_data = input_data; 
     }
 
-    // Virtual destructor guarantees safe cleanup if handled via base class pointers
-    virtual ~Matrix() = default;
-
     // Accessors & Mutators - Now completely conflict-free!
     size_t rows() const { return m_rows; }
     size_t cols() const { return m_cols; }
@@ -61,6 +58,9 @@ public:
 
     // Zero-copy raw pointer exposure for the UI buffer
     const std::complex<double>* raw_buffer() const { return m_data.data(); }
+    
+    // Virtual destructor guarantees safe cleanup if handled via base class pointers
+    virtual ~Matrix() = default;
 };
 
 // ============================================================================

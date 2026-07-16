@@ -7,7 +7,7 @@
             "command": "cmake",
             "args": [
                 "--build",
-                "build"
+                "build_Debug"
             ],
             "problemMatcher": ["$gcc"],
             "group": {
@@ -21,7 +21,7 @@
             "type": "shell",
             "dependsOn": ["Compile C++"],
             "dependsOrder": "sequence",
-            "command": "build\\QC-LASER-Portable-Distribution\\QC-LASER.exe",
+            "command": "build_Debug\\QC-LASER-Portable-Distribution\\QC-LASER.exe",
             "presentation": {
                 "panel": "dedicated"
             },

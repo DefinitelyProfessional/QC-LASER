@@ -1,15 +1,31 @@
-# cmake -S . -B build -G "Ninja"
-# cmake --build build
+# >>> Configure debug tree in "build_debug"
+# cmake -S . -B build_Debug -G "Ninja" -DCMAKE_BUILD_TYPE=Debug
+# cmake --build build_Debug
+# >>> Configure release tree in "build_release"
+# cmake -S . -B build_Release -G "Ninja" -DCMAKE_BUILD_TYPE=Release
+# cmake --build build_Release
+
 
 cmake_minimum_required(VERSION 3.20)
 project(QC-LASER CXX)
-
-# Enforce modern C++ standards
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # Force CMake to output compilation paths for VS Code IntelliSense
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
+# ---------------------------------------------------------
+# LINK-TIME OPTIMIZATION (LTO / IPO)
+# ---------------------------------------------------------
+# Automatically enable LTO for Release builds if the compiler supports it
+include(CheckIPOSupported)
+check_ipo_supported(RESULT lto_supported OUTPUT error)
+if(lto_supported)
+    set(CMAKE_INTERPROCEDURAL_OPTIMIZATION_RELEASE ON)
+    message(STATUS "Link-Time Optimization (LTO): Enabled for Release builds")
+else()
+    message(STATUS "Link-Time Optimization (LTO): Not supported (${error})")
+endif()
 
 # ---------------------------------------------------------
 # PORTABLE BUNDLE CONFIGURATION
@@ -21,11 +37,10 @@ file(MAKE_DIRECTORY "${BUNDLE_DIR}/saved-data")
 # ---------------------------------------------------------
 
 # Locate system graphics dependencies via MSYS2 pacman
-# Using components search ensures compatibility with MSYS2's pathing
 find_package(glfw3 CONFIG REQUIRED) 
 find_package(OpenGL REQUIRED)
 
-# Define your custom application source files
+# Source mappings
 set(APP_SOURCES
     src/main.cpp
     src/headers/math-core/function-definitions.hpp
@@ -34,7 +49,6 @@ set(APP_SOURCES
     src/headers/ui-utilities/stage-utilities.hpp
 )
 
-# Explicitly map the Dear ImGui sources
 set(IMGUI_SOURCES
     thirdparty/imgui/imgui.cpp
     thirdparty/imgui/imgui_demo.cpp
@@ -45,8 +59,32 @@ set(IMGUI_SOURCES
     thirdparty/imgui/backends/imgui_impl_opengl3.cpp
 )
 
-# Construct the final executable target
+# Construct executable
 add_executable(${PROJECT_NAME} ${APP_SOURCES} ${IMGUI_SOURCES})
+
+# ---------------------------------------------------------
+# COMPILER-SPECIFIC OPTIMIZATIONS (GCC / Clang / MinGW)
+# ---------------------------------------------------------
+if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
+    target_compile_options(${PROJECT_NAME} PRIVATE
+        # DEBUG FLAGS: Keep flags safe, generate full debug info, no optimization
+        $<$<CONFIG:Debug>:-g -O0 -Wall -Wextra>
+
+        # RELEASE FLAGS: Max stable optimizations + Parallel LTO
+        $<$<CONFIG:Release>:-O3 -march=native -mfma -ffast-math -flto=8>
+    )
+
+    # NEW: Force the linker to use all CPU cores during the LTO phase
+    target_link_options(${PROJECT_NAME} PRIVATE
+        $<$<CONFIG:Release>:-flto=8>
+    )
+elseif(MSVC)
+    # If you ever switch to native Visual Studio compiler
+    target_compile_options(${PROJECT_NAME} PRIVATE
+        $<$<CONFIG:Debug>:/Zi /Od>
+        $<$<CONFIG:Release>:/O2 /Oi /Ot /arch:AVX2>
+    )
+endif()
 
 # Map header search paths globally
 target_include_directories(${PROJECT_NAME} PRIVATE
@@ -62,7 +100,6 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
     OpenGL::GL
 )
 
-# Apply specific system adjustments for MinGW/MSYS2 compilers on Windows
 if(MINGW)
     target_link_libraries(${PROJECT_NAME} PRIVATE imm32 gdi32)
 endif()
