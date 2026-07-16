@@ -1,3 +1,4 @@
+#pragma once
 #include "headers/math-core/variable-definitions.hpp"
 
 namespace CORE {

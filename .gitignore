@@ -40,8 +40,8 @@
 *.app
 
 # Build directories
-build_debug/
-build_release/
+build_Debug/
+build_Release/
 Build/
 build-*/
 

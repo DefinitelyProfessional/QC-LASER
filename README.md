@@ -23,7 +23,8 @@ cmake --build build_Release
 ## How to Run
 The executable will be created in the `build` folder. To run the executable, use the command from root directory:
 ```bash
-./build\QC-LASER-Portable-Distribution\QC_LASER.exe
+./build_Debug/QC-LASER-Portable-Distribution/QC_LASER.exe
+./build_Release/QC-LASER-Portable-Distribution/QC_LASER.exe
 ```
 or run the executable directly from your IDE or use the `Compile n Run C++` task.
 

@@ -7,7 +7,7 @@
 
 
 cmake_minimum_required(VERSION 3.20)
-project(QC-LASER CXX)
+project(QC-LASER CXX RC)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
@@ -17,7 +17,6 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 # ---------------------------------------------------------
 # LINK-TIME OPTIMIZATION (LTO / IPO)
 # ---------------------------------------------------------
-# Automatically enable LTO for Release builds if the compiler supports it
 include(CheckIPOSupported)
 check_ipo_supported(RESULT lto_supported OUTPUT error)
 if(lto_supported)
@@ -43,10 +42,12 @@ find_package(OpenGL REQUIRED)
 # Source mappings
 set(APP_SOURCES
     src/main.cpp
+    src/app.rc
     src/headers/math-core/function-definitions.hpp
     src/headers/math-core/variable-definitions.hpp
     src/headers/ui-utilities/general-utilities.hpp
     src/headers/ui-utilities/stage-utilities.hpp
+    src/headers/ui-utilities/icon-resource.hpp
 )
 
 set(IMGUI_SOURCES

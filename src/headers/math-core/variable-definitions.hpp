@@ -5,9 +5,9 @@
 #include <stdexcept>
 #include <utility>
 
-// ============================================================================
+// ========================================================================================================
 // Versatile Matrix Data Structure for both classical and quantum
-// ============================================================================
+// ========================================================================================================
 class Matrix {
 protected:
     // Prefixed with m_ to completely avoid naming conflicts with accessor methods
@@ -48,11 +48,10 @@ public:
     void set_id(const std::string& new_id) { m_id = new_id; }
 
     // Overloading the () operator for mathematical row-major indexing access
-    inline std::complex<double>& operator()(size_t i, size_t j) {
+    inline std::complex<double>& operator()(size_t i, size_t j) { // Mutable (Read/Write) version
         return m_data[i * m_cols + j];
     }
-    
-    inline const std::complex<double>& operator()(size_t i, size_t j) const {
+    inline const std::complex<double>& operator()(size_t i, size_t j) const { // Immutable (Read-Only) version
         return m_data[i * m_cols + j];
     }
 
@@ -63,9 +62,9 @@ public:
     virtual ~Matrix() = default;
 };
 
-// ============================================================================
+// ========================================================================================================
 // Column Vector (Inherits from Matrix)
-// ============================================================================
+// ========================================================================================================
 class ClassicVector : public Matrix {
 public:
     // Dimension-First Constructor (Forces columns parameter to 1 automatically)

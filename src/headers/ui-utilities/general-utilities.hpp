@@ -1,4 +1,3 @@
-// File: src/headers/ui-utilities/general-ui-utilities.hpp
 #pragma once
 #include "imgui.h"
 #include <functional>
