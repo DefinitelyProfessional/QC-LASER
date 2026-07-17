@@ -4,86 +4,45 @@
 #include <string>
 
 // ========================================================================================================
-// Versatile Matrix Data Structure for both classical and quantum
+// Versatile simple Vector
+struct GenericVector {
+    size_t v_dim;
+    std::vector<std::complex<double>> v_data;
+
+    // Simple constructors
+    GenericVector(size_t dim) : v_dim(dim), v_data(dim, {0.0, 0.0}) {}
+    GenericVector(size_t dim, const std::vector<std::complex<double>>& input_data) :
+        v_dim(dim) {
+            if (input_data.size() != dim) {
+                throw std::invalid_argument("Input array size do not match the provided dimensions.");
+            }
+            v_data = input_data;
+        }
+    // Inline accessor, 1st for read/write, 2nd for read only const&
+    inline std::complex<double>& operator()(size_t i) {return v_data[i];}
+    inline const std::complex<double>& operator()(size_t i) const {return v_data[i];}
+    // Zero-copy raw pointer exposure for the UI buffer
+    const std::complex<double>* raw_buffer() const {return v_data.data();}
+};
 // ========================================================================================================
-class Matrix {
-protected:
-    // Prefixed with m_ to completely avoid naming conflicts with accessor methods
+// Versatile simple Matrix
+struct GenericMatrix {
     size_t m_rows;
     size_t m_cols;
-    std::string m_id;
     std::vector<std::complex<double>> m_data;
-    
-    // Cached quantum metadata properties
-    bool m_is_unitary;
-    bool m_is_hermitian;
-    bool m_is_normalized;
 
-    friend class SandboxSession;
-
-public:
-    // Dimension-First Constructor (Allocates empty/zero matrix)
-    Matrix(size_t rows, size_t cols, std::string id = "unnamed_matrix")
-        : m_rows(rows), m_cols(cols), m_id(std::move(id)), 
-          m_data(rows * cols, {0.0, 0.0}), 
-          m_is_unitary(false), m_is_hermitian(false), m_is_normalized(false) {}
-
-    // Population Constructor (Receives dimensions and a flat input array)
-    Matrix(size_t rows, size_t cols, const std::vector<std::complex<double>>& input_data, std::string id = "unnamed_matrix")
-        : m_rows(rows), m_cols(cols), m_id(std::move(id)),
-          m_is_unitary(false), m_is_hermitian(false), m_is_normalized(false) {
-        
-        // Strict boundary checking before memory assignment
-        if (input_data.size() != rows * cols) {
-            throw std::invalid_argument("Input array dimensions do not match the provided rows and columns.");
+    // Simple constructors
+    GenericMatrix(size_t rows, size_t cols) : m_rows(rows), m_cols(cols), m_data(rows * cols, {0.0, 0.0}) {}
+    GenericMatrix(size_t rows, size_t cols, const std::vector<std::complex<double>>& input_data) :
+        m_rows(rows), m_cols(cols) {
+            if (input_data.size() != rows * cols) {
+                throw std::invalid_argument("Input array size do not match the provided rows and cols.");
+            }
+            m_data = input_data;
         }
-        
-        m_data = input_data; 
-    }
-
-    // Accessors & Mutators - Now completely conflict-free!
-    size_t rows() const { return m_rows; }
-    size_t cols() const { return m_cols; }
-    const std::string& get_id() const { return m_id; }
-    void set_id(const std::string& new_id) { m_id = new_id; }
-
-    // Overloading the () operator for mathematical row-major indexing access
-    inline std::complex<double>& operator()(size_t i, size_t j) { // Mutable (Read/Write) version
-        return m_data[i * m_cols + j];
-    }
-    inline const std::complex<double>& operator()(size_t i, size_t j) const { // Immutable (Read-Only) version
-        return m_data[i * m_cols + j];
-    }
-
+    // Inline accessor, 1st for read/write, 2nd for read only const&
+    inline std::complex<double>& operator()(size_t i, size_t j) {return m_data[i * m_cols + j];}
+    inline const std::complex<double>& operator()(size_t i, size_t j) const {return m_data[i * m_cols + j];}
     // Zero-copy raw pointer exposure for the UI buffer
-    const std::complex<double>* raw_buffer() const { return m_data.data(); }
-    
-    // Virtual destructor guarantees safe cleanup if handled via base class pointers
-    virtual ~Matrix() = default;
-};
-
-// ========================================================================================================
-// Column Vector (Inherits from Matrix)
-// ========================================================================================================
-class ClassicVector : public Matrix {
-public:
-    // Dimension-First Constructor (Forces columns parameter to 1 automatically)
-    ClassicVector(size_t dim, std::string id = "unnamed_vector")
-        : Matrix(dim, 1, std::move(id)) {}
-
-    // Population Constructor (Forces columns parameter to 1 automatically)
-    ClassicVector(size_t dim, const std::vector<std::complex<double>>& input_data, std::string id = "unnamed_vector")
-        : Matrix(dim, 1, input_data, std::move(id)) {}
-
-    // Vector-specific dimension accessor (Simply references our underlying rows variable)
-    size_t dim() const { return m_rows; }
-
-    // Convenient 1D Indexing accessor specifically for linear vectors
-    inline std::complex<double>& operator()(size_t i) {
-        return m_data[i]; 
-    }
-    
-    inline const std::complex<double>& operator()(size_t i) const {
-        return m_data[i];
-    }
+    const std::complex<double>* raw_buffer() const {return m_data.data();}
 };
