@@ -19,6 +19,8 @@ protected:
     bool m_is_hermitian;
     bool m_is_normalized;
 
+    friend class SandboxSession;
+
 public:
     // Dimension-First Constructor (Allocates empty/zero matrix)
     Matrix(size_t rows, size_t cols, std::string id = "unnamed_matrix")
