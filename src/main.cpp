@@ -1,18 +1,22 @@
-#include "headers/ui-utilities/stage-utilities.hpp"
 #include "headers/ui-utilities/general-utilities.hpp"
+#include "headers/ui-utilities/stage-utilities.hpp"
 #include "headers/math-core/function-definitions.hpp"
 #include "headers/storage-utilities/storage-utilities.hpp"
 #include <chrono>
+#include <iostream>
 
-// Define our target frame duration (1000 milliseconds / 60 FPS = 16.666 ms per frame)
+// Define target frame duration (1000 milliseconds / 60 FPS = 16.666 ms per frame)
 const std::chrono::duration<double, std::milli> targetFrameTime(1000.0 / 60.0);
 
 int main() {
     // IMGUI SUBSYSTEMS INITIALIZATION ========================================================================
     GLFWwindow* window = STAGE::InitializeApplication(750, 1000, "QC Linear Algebra Sandbox Engine R.");
-    if (!window) {std::cerr << "Fatal Error: Failed to initialize application stages." << std::endl; return 1;}
+    if (!window) {std::cerr << "Fatal Error: Failed to initialize application stages." << std::endl; return -1;}
     ImVec4 clear_color = ImVec4(0.12f, 0.12f, 0.14f, 1.00f);
     // ========================================================================================================
+
+    // WindowManager to handle unified rendering of all windows ===============================================
+    STAGE::WindowManager win_manager;
 
     // CORE IMGUI RENDER LOOP =================================================================================
     while (!glfwWindowShouldClose(window)) {
@@ -27,7 +31,7 @@ int main() {
         // -----------------------------------------------------------
         // ENGINE UI & EVENT LISTENERS
         // -----------------------------------------------------------
-
+        win_manager.RenderAll();
         // -----------------------------------------------------------
         // Finalize geometry and push to the GPU
         // -----------------------------------------------------------

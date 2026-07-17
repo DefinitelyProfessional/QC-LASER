@@ -10,15 +10,69 @@
 #define GLFW_EXPOSE_NATIVE_WIN32
 #include <GLFW/glfw3native.h>
 
-#include <windows.h>
-#include <filesystem>
-#include <iostream>
-#include <string>
-
 // Include the resource ID definition
 #include "icon-resource.hpp"
 
+#include <filesystem>
+#include <iostream>
+#include <string>
+#include <vector>
+#include <memory>
+
+// Base class for windows based UI
+class UIWindow {
+protected:
+    std::string m_WindowName;
+    bool m_IsOpen;
+
+public:
+    UIWindow(const std::string& name, bool startOpen = true)
+        : m_WindowName(name), m_IsOpen(startOpen) {}
+
+    virtual ~UIWindow() = default;
+
+    // Pure virtual function: Every window MUST implement its layout logic here
+    virtual void Render() = 0;
+
+    // Standard getters/setters for window visibility
+    bool IsOpen() const { return m_IsOpen; }
+    void SetOpen(bool open) { m_IsOpen = open; }
+    const std::string& GetName() const { return m_WindowName; }
+};
+
+
+// Namespace for all STAGE related functionalities include UI initialization and shutdown and more
 namespace STAGE {
+    // Unified class to manage rendering all windows with imgui ===============================================
+    class WindowManager {
+    private:
+        std::vector<std::unique_ptr<UIWindow>> m_Windows;
+    public:
+        // Register a new window panel dynamically into the ecosystem
+        template <typename T, typename... Args>
+        T* RegisterWindow(Args&&... args) {
+            // Create the derived window instance safely
+            auto window = std::make_unique<T>(std::forward<Args>(args)...);
+            T* rawPtr = window.get();
+            m_Windows.push_back(std::move(window));
+            return rawPtr; // Return pointer so main can bind callbacks immediately
+        }
+
+        // Single unified dispatch call to render every single registered component
+        void RenderAll() {
+            for (const auto& window : m_Windows) {
+                if (window->IsOpen()) {window->Render();}
+            }
+        }
+
+        // Optional: Search for a window dynamically by its ImGui string ID
+        UIWindow* FindWindow(const std::string& name) {
+            for (const auto& window : m_Windows) {
+                if (window->GetName() == name) return window.get();
+            }
+            return nullptr;
+        }
+    };
 
     // Internal robust GLFW error callback ====================================================================
     inline void glfw_error_callback(int error, const char* description) {

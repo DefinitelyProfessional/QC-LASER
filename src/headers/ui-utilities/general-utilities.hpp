@@ -1,52 +1,19 @@
 #pragma once
+
 #include "imgui.h"
+
+// for UIWindow 
+#include "stage-utilities.hpp"
+
 #include <functional>
 #include <algorithm>
 #include <thread>
 #include <mutex>
 #include <atomic>
-#include <string>
 #include <cstring>
-#include <iostream>
-#include <memory>
-#include <vector>
 
 
 namespace UI {
-
-    class UIWindow {
-    public:
-        std::string Name;
-        bool IsOpen = true;
-
-        UIWindow(std::string name) : Name(std::move(name)) {}
-        virtual ~UIWindow() = default;
-        virtual void Render() = 0;
-    };
-
-    // A simple coordinator to hold active windows
-    class WindowManager {
-    public:
-        std::vector<std::shared_ptr<UIWindow>> ActiveWindows;
-
-        void AddWindow(std::shared_ptr<UIWindow> window) {
-            ActiveWindows.push_back(window);
-        }
-
-        void RenderAll() {
-            // Erase closed windows
-            ActiveWindows.erase(
-                std::remove_if(ActiveWindows.begin(), ActiveWindows.end(),
-                            [](const auto& w) { return !w->IsOpen; }),
-                ActiveWindows.end());
-
-            // Render remaining windows
-            for (auto& window : ActiveWindows) {
-                window->Render();
-            }
-        }
-    };
-
     // class VectorEntryWindow : public UIWindow {
     // private:
     //     VectorManager* m_VectorManager;

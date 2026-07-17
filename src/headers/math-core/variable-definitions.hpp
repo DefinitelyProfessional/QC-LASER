@@ -4,7 +4,8 @@
 #include <string>
 
 // ========================================================================================================
-// Versatile simple Vector
+
+// Versatile simple Vector. GenericVector(dim, data)
 struct GenericVector {
     size_t v_dim;
     std::vector<std::complex<double>> v_data;
@@ -27,7 +28,8 @@ struct GenericVector {
     const std::complex<double>* raw_buffer() const {return v_data.data();}
 };
 // ========================================================================================================
-// Versatile simple Matrix
+
+// Versatile simple Matrix. GenericMatrix(rows, cols, data)
 struct GenericMatrix {
     size_t m_rows;
     size_t m_cols;

@@ -10,20 +10,22 @@
 
 namespace fs = std::filesystem;
 
-// Define a type-safe union that can hold any of your linear algebra objects
+// Type-safe union that can hold any of linear algebra objects
 using LinAlgObject = std::variant<GenericMatrix, GenericVector>;
 
 enum class LinalgType : int {
     GenericMatrix = 0,
     GenericVector = 1
 };
+// ========================================================================================================
 
+// Manage Loading & Storing the Sandbox registry
 class SandboxSession {
 private:
-    fs::path m_filepath;
+    fs::path s_filepath;
     
-    // The Registry now stores the variant values directly (no shared_ptr needed!)
-    std::unordered_map<std::string, LinAlgObject> m_registry;
+    // The Registry now stores the variant values directly
+    std::unordered_map<std::string, LinAlgObject> s_registry;
 
     static void execute_sql(sqlite3* db, const std::string& sql) {
         char* err_msg = nullptr;
@@ -38,27 +40,25 @@ private:
     }
 
 public:
-    // ====================================================================================================
-    // THE LOAD PHASE
-    // ====================================================================================================
+    // LOAD sandbox data from specified filename as a SandboxSession
     explicit SandboxSession(const std::string& filename) {
         fs::path dir = fs::current_path() / "saved-data";
         if (!fs::exists(dir)) {
             fs::create_directories(dir);
         }
 
-        m_filepath = dir / filename;
+        s_filepath = dir / filename;
 
-        if (!fs::exists(m_filepath)) {
-            std::cout << "Creating new sandbox session targeting: " << m_filepath.filename() << "\n";
+        if (!fs::exists(s_filepath)) {
+            std::cout << "Creating new sandbox session targeting: " << s_filepath.filename() << "\n";
             return; 
         }
 
-        std::cout << "Loading existing sandbox session from: " << m_filepath.filename() << "\n";
+        std::cout << "Loading existing sandbox session from: " << s_filepath.filename() << "\n";
         
         sqlite3* db;
-        if (sqlite3_open(m_filepath.string().c_str(), &db) != SQLITE_OK) {
-            throw std::runtime_error("Failed to open SQLite database: " + m_filepath.string());
+        if (sqlite3_open(s_filepath.string().c_str(), &db) != SQLITE_OK) {
+            throw std::runtime_error("Failed to open SQLite database: " + s_filepath.string());
         }
 
         // Schema is updated to remove quantum flags, leaving only dimensions and binary data
@@ -84,9 +84,9 @@ public:
 
                 // Emplace the correct struct directly into the variant map
                 if (tag == LinalgType::GenericVector) {
-                    m_registry.emplace(id, GenericVector(rows, data)); // rows represents v_dim here
+                    s_registry.emplace(id, GenericVector(rows, data)); // rows represents v_dim here
                 } else {
-                    m_registry.emplace(id, GenericMatrix(rows, cols, data));
+                    s_registry.emplace(id, GenericMatrix(rows, cols, data));
                 }
             }
         }
@@ -95,49 +95,49 @@ public:
     }
 
     // ====================================================================================================
-    // IN-MEMORY MANAGEMENT PHASE
+    // IN-MEMORY MANAGEMENT
     // ====================================================================================================
     
     // Add or Overwrite an object in memory
     void add(const std::string& id, LinAlgObject obj) {
-        // Add or Overwrite an object in memory
-        m_registry.insert_or_assign(id, std::move(obj));
+        s_registry.insert_or_assign(id, std::move(obj));
     }
 
+    // Self explanatory removal by id key
     void remove(const std::string& id) {
-        m_registry.erase(id);
+        s_registry.erase(id);
     }
 
     // Safely retrieve a POINTER to the requested type, allowing in-place edits.
     // Returns nullptr if the ID doesn't exist OR if you ask for the wrong type.
     template<typename T>
     T* get_as(const std::string& id) {
-        auto it = m_registry.find(id);
-        if (it == m_registry.end()) return nullptr;
+        auto it = s_registry.find(id);
+        if (it == s_registry.end()) return nullptr;
         
         // std::get_if safely checks the variant. If it holds a T, returns a pointer to it.
         return std::get_if<T>(&it->second);
     }
 
-    // Ultra-efficient C++17 dictionary key rename without copying the heavy vector data
+    // Dictionary key rename without copying heavy vector data
     void rename(const std::string& old_id, const std::string& new_id) {
         if (old_id == new_id) return;
-        auto node = m_registry.extract(old_id);
+        auto node = s_registry.extract(old_id);
         if (!node.empty()) {
             node.key() = new_id;
-            m_registry.insert(std::move(node));
+            s_registry.insert(std::move(node));
         }
     }
     
-    const auto& get_all() const {return m_registry;}
-    size_t count() const {return m_registry.size();}
+    const auto& get_all() const {return s_registry;}
+    size_t count() const {return s_registry.size();}
 
     // ====================================================================================================
-    // THE STORE PHASE
+    // STORE sandbox data written back to filename
     // ====================================================================================================
     void save() const {
         sqlite3* db;
-        if (sqlite3_open(m_filepath.string().c_str(), &db) != SQLITE_OK) {
+        if (sqlite3_open(s_filepath.string().c_str(), &db) != SQLITE_OK) {
             throw std::runtime_error("Failed to open SQLite database for writing.");
         }
 
@@ -166,7 +166,7 @@ public:
             sqlite3_stmt* stmt;
             sqlite3_prepare_v2(db, insert_sql, -1, &stmt, nullptr);
 
-            for (const auto& [id, obj_variant] : m_registry) {
+            for (const auto& [id, obj_variant] : s_registry) {
                 sqlite3_reset(stmt);
                 sqlite3_bind_text(stmt, 1, id.c_str(), -1, SQLITE_STATIC);
 
@@ -204,6 +204,6 @@ public:
         }
 
         sqlite3_close(db);
-        std::cout << "Successfully saved sandbox to: " << m_filepath.filename() << "\n";
+        std::cout << "Successfully saved sandbox to: " << s_filepath.filename() << "\n";
     }
 };
