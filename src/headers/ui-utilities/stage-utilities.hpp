@@ -15,7 +15,7 @@
 #include <iostream>
 #include <string>
 
-// 2. Include the resource ID definition (they are in the same folder)
+// Include the resource ID definition
 #include "icon-resource.hpp"
 
 namespace STAGE {

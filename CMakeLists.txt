@@ -37,6 +37,7 @@ file(MAKE_DIRECTORY "${BUNDLE_DIR}/saved-data")
 
 # Locate system graphics dependencies via MSYS2 pacman
 find_package(glfw3 CONFIG REQUIRED) 
+find_package(SQLite3 REQUIRED)
 find_package(OpenGL REQUIRED)
 
 # Source mappings
@@ -48,9 +49,10 @@ set(APP_SOURCES
     src/headers/ui-utilities/general-utilities.hpp
     src/headers/ui-utilities/stage-utilities.hpp
     src/headers/ui-utilities/icon-resource.hpp
+    src/headers/storage-utilities/storage-utilities.hpp
 )
 
-set(IMGUI_SOURCES
+set(THIRDPARTY_SOURCES
     thirdparty/imgui/imgui.cpp
     thirdparty/imgui/imgui_demo.cpp
     thirdparty/imgui/imgui_draw.cpp
@@ -58,10 +60,11 @@ set(IMGUI_SOURCES
     thirdparty/imgui/imgui_widgets.cpp
     thirdparty/imgui/backends/imgui_impl_glfw.cpp
     thirdparty/imgui/backends/imgui_impl_opengl3.cpp
+    thirdparty/sqlite3/sqlite3.c
 )
 
 # Construct executable
-add_executable(${PROJECT_NAME} ${APP_SOURCES} ${IMGUI_SOURCES})
+add_executable(${PROJECT_NAME} ${APP_SOURCES} ${THIRDPARTY_SOURCES})
 
 # ---------------------------------------------------------
 # COMPILER-SPECIFIC OPTIMIZATIONS (GCC / Clang / MinGW)
@@ -75,7 +78,7 @@ if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
         $<$<CONFIG:Release>:-O3 -march=native -mfma -ffast-math -flto=8>
     )
 
-    # NEW: Force the linker to use all CPU cores during the LTO phase
+    # Force the linker to use all CPU cores during the LTO phase
     target_link_options(${PROJECT_NAME} PRIVATE
         $<$<CONFIG:Release>:-flto=8>
     )
@@ -93,12 +96,14 @@ target_include_directories(${PROJECT_NAME} PRIVATE
     src/headers
     thirdparty/imgui
     thirdparty/imgui/backends
+    thirdparty/sqlite3
 )
 
 # Link against the necessary graphics and system packages
 target_link_libraries(${PROJECT_NAME} PRIVATE
     glfw
     OpenGL::GL
+    SQLite3::SQLite3
 )
 
 if(MINGW)

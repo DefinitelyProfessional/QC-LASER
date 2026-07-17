@@ -1,6 +1,7 @@
 #include "headers/ui-utilities/stage-utilities.hpp"
 #include "headers/ui-utilities/general-utilities.hpp"
 #include "headers/math-core/function-definitions.hpp"
+#include "headers/storage-utilities/storage-utilities.hpp"
 #include <chrono>
 
 // Define our target frame duration (1000 milliseconds / 60 FPS = 16.666 ms per frame)
@@ -92,24 +93,12 @@ int main() {
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
 
+        ImGui::ShowDemoWindow();
         // -----------------------------------------------------------
         // ENGINE UI & EVENT LISTENERS
         // -----------------------------------------------------------
-        ImGui::ShowDemoWindow();
         myCustomUI.Render();
         engineInterface.Render();
-        ImGui::Begin("Matrix Operations");
-        ImGui::Text("Welcome to the Linear Algebra Engine.");
-        ImGui::Separator();
-        
-        // Immediate-mode event listening:
-        // This button function returns true ONLY on the exact frame the user clicks it.
-        if (ImGui::Button("Perform Identity Matrix Check")) {
-            std::cout << "[Engine] Executing mathematical operation..." << std::endl;
-            // You will eventually call your math-core functions here
-        }
-        ImGui::End();
-
 
         // -----------------------------------------------------------
         // Finalize geometry and push to the GPU

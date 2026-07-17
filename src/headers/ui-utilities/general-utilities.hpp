@@ -1,15 +1,136 @@
 #pragma once
 #include "imgui.h"
 #include <functional>
+#include <algorithm>
 #include <thread>
 #include <mutex>
 #include <atomic>
 #include <string>
-#include <cstring> // Required for text buffer manipulation
+#include <cstring>
 #include <iostream>
+#include <memory>
+#include <vector>
 
 
 namespace UI {
+
+    class UIWindow {
+    public:
+        std::string Name;
+        bool IsOpen = true;
+
+        UIWindow(std::string name) : Name(std::move(name)) {}
+        virtual ~UIWindow() = default;
+        virtual void Render() = 0;
+    };
+
+    // A simple coordinator to hold active windows
+    class WindowManager {
+    public:
+        std::vector<std::shared_ptr<UIWindow>> ActiveWindows;
+
+        void AddWindow(std::shared_ptr<UIWindow> window) {
+            ActiveWindows.push_back(window);
+        }
+
+        void RenderAll() {
+            // Erase closed windows
+            ActiveWindows.erase(
+                std::remove_if(ActiveWindows.begin(), ActiveWindows.end(),
+                            [](const auto& w) { return !w->IsOpen; }),
+                ActiveWindows.end());
+
+            // Render remaining windows
+            for (auto& window : ActiveWindows) {
+                window->Render();
+            }
+        }
+    };
+
+    // class VectorEntryWindow : public UIWindow {
+    // private:
+    //     VectorManager* m_VectorManager;
+    //     int m_Dimensions;
+    //     std::vector<float> m_Entries;
+
+    // public:
+    //     VectorEntryWindow(int dimensions, VectorManager* vectorMgr) 
+    //         : UIWindow("Populate Vector Data"), m_VectorManager(vectorMgr), m_Dimensions(dimensions) {
+    //         m_Entries.resize(dimensions, 0.0f); // Pre-allocate entries with zeros
+    //     }
+
+    //     void Render() override {
+    //         if (!IsOpen) return;
+
+    //         ImGui::Begin(Name.c_str(), &IsOpen);
+    //         ImGui::Text("Enter values for your %d-dimensional vector:", m_Dimensions);
+    //         ImGui::Separator();
+
+    //         // Dynamically generate input fields based on requested dimensions
+    //         for (int i = 0; i < m_Dimensions; ++i) {
+    //             std::string label = "Entry [" + std::to_string(i) + "]";
+    //             ImGui::InputFloat(label.c_str(), &m_Entries[i]);
+    //         }
+
+    //         ImGui::Separator();
+    //         if (ImGui::Button("Commit Vector to Memory")) {
+    //             m_VectorManager->SaveVector("User_Vector_" + std::to_string(m_Dimensions), m_Entries);
+    //             IsOpen = false; // Close this window when done!
+    //         }
+
+    //         ImGui::End();
+    //     }
+    // };
+    
+    // class VectorCreationWindow : public UIWindow {
+    // private:
+    //     WindowManager* m_WinManager;
+    //     VectorManager* m_VectorManager;
+    //     char m_DimBuffer[64] = "";
+    //     std::string m_ErrorMessage = "";
+
+    // public:
+    //     VectorCreationWindow(WindowManager* winMgr, VectorManager* vecMgr) 
+    //         : UIWindow("Create Classical Vector"), m_WinManager(winMgr), m_VectorManager(vecMgr) {}
+
+    //     void Render() override {
+    //         ImGui::Begin(Name.c_str());
+
+    //         ImGui::Text("Specify Vector Dimensions:");
+    //         // Input text filtered to decimal digits only
+    //         ImGui::InputText("Dimensions", m_DimBuffer, sizeof(m_DimBuffer), ImGuiInputTextFlags_CharsDecimal);
+
+    //         if (ImGui::Button("Initialize Vector Space")) {
+    //             std::string inputStr(m_DimBuffer);
+                
+    //             // Validation Logic
+    //             if (inputStr.empty()) {
+    //                 m_ErrorMessage = "Error: Input cannot be empty.";
+    //             } else {
+    //                 try {
+    //                     int dims = std::stoi(inputStr);
+    //                     if (dims <= 0) {
+    //                         m_ErrorMessage = "Error: Dimensions must be strictly positive (> 0).";
+    //                     } else {
+    //                         // Success! Clear errors and spawn the entry window dynamically
+    //                         m_ErrorMessage = "";
+    //                         auto entryWin = std::make_shared<VectorEntryWindow>(dims, m_VectorManager);
+    //                         m_WinManager->AddWindow(entryWin);
+    //                     }
+    //                 } catch (...) {
+    //                     m_ErrorMessage = "Error: Failed to convert input to integer.";
+    //                 }
+    //             }
+    //         }
+
+    //         // Display error message in red if validation fails
+    //         if (!m_ErrorMessage.empty()) {
+    //             ImGui::TextColored(ImVec4(1.0f, 0.3f, 0.3f, 1.0f), "%s", m_ErrorMessage.c_str());
+    //         }
+
+    //         ImGui::End();
+    //     }
+    // };
 
     class UI_ModuleName_Controller {
     public:
