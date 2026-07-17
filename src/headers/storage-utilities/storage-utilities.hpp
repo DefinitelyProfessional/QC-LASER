@@ -100,7 +100,8 @@ public:
     
     // Add or Overwrite an object in memory
     void add(const std::string& id, LinAlgObject obj) {
-        m_registry[id] = std::move(obj);
+        // Add or Overwrite an object in memory
+        m_registry.insert_or_assign(id, std::move(obj));
     }
 
     void remove(const std::string& id) {

@@ -9,6 +9,8 @@ struct GenericVector {
     size_t v_dim;
     std::vector<std::complex<double>> v_data;
 
+    // Default Constructor
+    GenericVector() : v_dim(0), v_data() {}
     // Simple constructors
     GenericVector(size_t dim) : v_dim(dim), v_data(dim, {0.0, 0.0}) {}
     GenericVector(size_t dim, const std::vector<std::complex<double>>& input_data) :
@@ -31,6 +33,8 @@ struct GenericMatrix {
     size_t m_cols;
     std::vector<std::complex<double>> m_data;
 
+    // Default Constructor
+    GenericMatrix() : m_rows(0), m_cols(0), m_data() {}
     // Simple constructors
     GenericMatrix(size_t rows, size_t cols) : m_rows(rows), m_cols(cols), m_data(rows * cols, {0.0, 0.0}) {}
     GenericMatrix(size_t rows, size_t cols, const std::vector<std::complex<double>>& input_data) :
