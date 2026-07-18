@@ -1,6 +1,6 @@
 ## Quantum Computing Linear Algebra Sandbox Engine R.
 # QC - LASER 
-"The R stands for **Remarkable** Version and definitely not as filler to make the acronym work because 'LASE just doesn't sound as good'." - Stephen Matthews 2026
+"The R stands for **Remarkable** Edition and definitely not as filler to make the acronym work because 'LASE just doesn't sound as good'." - Stephen Matthews 2026
 
 ---
 #### Made with Dear ImGui v1.92.8 by Omar Cornut and contributors. 

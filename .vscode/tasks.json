@@ -17,15 +17,18 @@
             "detail": "Task to compile this specific project"
         },
 		{
-            "label": "Compile n Run C++", // This has to match with keybindings.json
-            "type": "shell",
+            "label": "Compile n Run C++",
+            "type": "process",
             "dependsOn": ["Compile C++"],
             "dependsOrder": "sequence",
-            "command": "build_Debug\\QC-LASER-Portable-Distribution\\QC-LASER.exe",
+            "options": {
+                "cwd": "${workspaceFolder}\\build_Debug\\QC-LASER-Portable-Distribution"
+            },
+            "command": "QC-LASER.exe",
             "presentation": {
                 "panel": "dedicated"
             },
-            "detail": "Task to Compile then Execute immidiately"
+            "detail": "Task to Compile then Execute immediately"
         }
     ]
 }

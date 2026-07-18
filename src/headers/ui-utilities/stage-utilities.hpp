@@ -12,6 +12,8 @@
 
 // Include the resource ID definition
 #include "icon-resource.hpp"
+// Include general-utilities for UIWindow class
+#include "general-utilities.hpp"
 
 #include <filesystem>
 #include <iostream>
@@ -19,27 +21,7 @@
 #include <vector>
 #include <memory>
 
-// Base class for windows based UI
-class UIWindow {
-protected:
-    std::string window_name;
-    bool is_open;
-
-public:
-    UIWindow(const std::string& name, bool startOpen = true)
-        : window_name(name), is_open(startOpen) {}
-
-    virtual ~UIWindow() = default;
-
-    // Pure virtual function: Every window MUST implement its layout logic here
-    virtual void Render() = 0;
-
-    // Standard getters/setters for window visibility
-    bool IsOpen() const { return is_open; }
-    void SetOpen(bool open) { is_open = open; }
-    const std::string& GetName() const { return window_name; }
-};
-
+namespace fs = std::filesystem;
 
 // Namespace for all STAGE related functionalities include UI initialization and shutdown and more
 namespace STAGE {
@@ -79,7 +61,7 @@ namespace STAGE {
     }
 
     // Encapsulates the complete boot sequence for GLFW, OpenGL, and ImGui ====================================
-    inline GLFWwindow* InitializeApplication(int width, int height, const char* title) {
+    inline GLFWwindow* InitializeApplication(int width, int height, const char* TITLE, const fs::path& ROOT) {
         // GLFW Setup
         glfwSetErrorCallback(glfw_error_callback);
         if (!glfwInit()) return nullptr;
@@ -90,7 +72,7 @@ namespace STAGE {
         glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 
         // Window Creation
-        GLFWwindow* window = glfwCreateWindow(width, height, title, nullptr, nullptr);
+        GLFWwindow* window = glfwCreateWindow(width, height, TITLE, nullptr, nullptr);
         if (!window) {
             glfwTerminate();
             return nullptr;
@@ -126,10 +108,7 @@ namespace STAGE {
         ImGui_ImplOpenGL3_Init("#version 330");
 
         // Extract and locate the imgui.ini to portable dist directory
-        wchar_t buffer[MAX_PATH];
-        GetModuleFileNameW(NULL, buffer, MAX_PATH);
-        std::filesystem::path exeDir = std::filesystem::path(buffer).parent_path();
-        std::filesystem::path iniPath = exeDir / "imgui.ini";
+        fs::path iniPath = ROOT / "imgui.ini";
         static std::string persistentIniPath = iniPath.string();
         io.IniFilename = persistentIniPath.c_str();
         
@@ -142,9 +121,7 @@ namespace STAGE {
         ImGui_ImplGlfw_Shutdown();
         ImGui::DestroyContext();
 
-        if (window) {
-            glfwDestroyWindow(window);
-        }
+        if (window) {glfwDestroyWindow(window);}
         glfwTerminate();
     }
 

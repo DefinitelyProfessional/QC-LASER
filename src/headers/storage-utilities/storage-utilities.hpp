@@ -41,10 +41,10 @@ private:
     void load_sandbox() {
         fs::path s_filepath = saved_data_dir / active_filename;
         if (!fs::exists(s_filepath)) {
-            std::cout << "Creating new sandbox session targeting: " << s_filepath.filename() << "\n";
-            return; 
+            std::cout << "[SANDBOX] Creating new sandbox session targeting: " << s_filepath.filename() << "\n";
+            return; // There is nothing to load, exit.
         }
-        else {std::cout << "Loading existing sandbox session from: " << s_filepath.filename() << "\n";}
+        else {std::cout << "[SANDBOX] Loading existing sandbox session from: " << s_filepath.filename() << "\n";}
         
         sqlite3* db;
         if (sqlite3_open(s_filepath.string().c_str(), &db) != SQLITE_OK) {
@@ -89,7 +89,7 @@ public:
         saved_data_dir(data_dir), active_filename(filename) {load_sandbox();}
 
     // return the active sandbox filename string
-    std::string get_active_filename() {return active_filename;}
+    const std::string& get_active_filename() const {return active_filename;}
 
     // Add or Overwrite an object in memory
     void add(const std::string& id, LinAlgObject obj) {
@@ -196,7 +196,7 @@ public:
         }
 
         sqlite3_close(db);
-        std::cout << "Successfully saved sandbox to: " << s_filepath.filename() << "\n";
+        std::cout << "[SANDBOX] Successfully saved sandbox to: " << s_filepath.filename() << "\n";
     }
 
     // Save then delete previous sandbox, switch and load new sandbox

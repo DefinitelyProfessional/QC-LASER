@@ -47,6 +47,7 @@ set(APP_SOURCES
     src/headers/math-core/function-definitions.hpp
     src/headers/math-core/variable-definitions.hpp
     src/headers/ui-utilities/general-utilities.hpp
+    src/headers/ui-utilities/sandbox-manager.hpp
     src/headers/ui-utilities/stage-utilities.hpp
     src/headers/ui-utilities/icon-resource.hpp
     src/headers/storage-utilities/storage-utilities.hpp
