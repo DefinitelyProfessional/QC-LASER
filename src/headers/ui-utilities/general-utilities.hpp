@@ -7,6 +7,7 @@
 
 #include <filesystem>
 #include <functional>
+#include <vector>
 #include <string>
 
 namespace fs = std::filesystem;
@@ -16,19 +17,41 @@ namespace UI {
     class SandboxManagerWindow : public UIWindow {
     private:
         fs::path saved_data_dir;
-    
+        std::vector<std::string> db_filenames;
+
+        // Extract filename strings inside saved_data_dir
+        inline std::vector<std::string> get_db_filenames() {
+            std::vector<std::string> filenames;
+            if (!fs::exists(saved_data_dir) || !fs::is_directory(saved_data_dir)) {
+                throw std::invalid_argument("Sandbox data directory not found.");
+            }
+
+            for (const auto& entry : fs::directory_iterator(saved_data_dir)) {
+                if (entry.is_regular_file() && entry.path().extension() == ".db") {
+                    filenames.push_back(entry.path().filename().string());
+                }
+            }
+            return filenames;
+        }
     public:
         // Event Listeners to be defined in main
         std::function<void(std::string)> Event_OnSelectSandbox;
+        std::function<void(void)> Event_OnRefreshFilenames;
 
         // Constructor simply sets UIWindow window_name and directory filepath
         SandboxManagerWindow(const fs::path& data_dir) : 
-            UIWindow("SandboxManager"), saved_data_dir(data_dir) {}
-
+            UIWindow("SandboxManager"), saved_data_dir(data_dir) {
+                refresh_filenames();
+            }
+        
+        // Refresh db_filenames
+        void refresh_filenames() {
+            db_filenames = get_db_filenames();
+            // TODO must effect rendering also refreshed
+        }
         // Render function definition
         void Render() override {
             if (!is_open) return; // render control
-
         }
     };
     // class VectorEntryWindow : public UIWindow {

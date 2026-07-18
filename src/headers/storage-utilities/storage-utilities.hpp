@@ -16,14 +16,15 @@ enum class LinAlgType : int {
     GenericMatrix = 0,
     GenericVector = 1
 };
-// ========================================================================================================
 
 // Manage Loading & Storing the Sandbox registry
-class SandboxSession {
+class SandboxSessionManager {
 private:
-    fs::path s_filepath;
+    fs::path saved_data_dir;
+    std::string active_filename;
     std::unordered_map<std::string, LinAlgObject> s_registry;
 
+    // helper function to execute simple sqlite3
     static void execute_sql(sqlite3* db, const std::string& sql) {
         char* err_msg = nullptr;
         if (sqlite3_exec(db, sql.c_str(), nullptr, nullptr, &err_msg) != SQLITE_OK) {
@@ -35,12 +36,10 @@ private:
             throw std::runtime_error(err);
         }
     }
-
-public:
-    // LOAD sandbox data from specified filename as a SandboxSession
-    explicit SandboxSession(const fs::path& data_dir, const std::string& filename) {
-        s_filepath = data_dir / filename;
-
+    
+    // LOAD sandbox data from specified filename
+    void load_sandbox() {
+        fs::path s_filepath = saved_data_dir / active_filename;
         if (!fs::exists(s_filepath)) {
             std::cout << "Creating new sandbox session targeting: " << s_filepath.filename() << "\n";
             return; 
@@ -52,7 +51,6 @@ public:
             throw std::runtime_error("Failed to open SQLite database: " + s_filepath.string());
         }
 
-        // Schema is updated to remove quantum flags, leaving only dimensions and binary data
         const char* query_sql = "SELECT object_id, type_tag, rows, cols, data_blob FROM linear_objects;";
 
         sqlite3_stmt* stmt;
@@ -85,10 +83,14 @@ public:
         sqlite3_close(db);
     }
 
-    // ====================================================================================================
-    // IN-MEMORY MANAGEMENT
-    // ====================================================================================================
-    
+public:
+    // SandboxSessionManager Constructor
+    explicit SandboxSessionManager(const fs::path& data_dir, const std::string& filename) :
+        saved_data_dir(data_dir), active_filename(filename) {load_sandbox();}
+
+    // return the active sandbox filename string
+    std::string get_active_filename() {return active_filename;}
+
     // Add or Overwrite an object in memory
     void add(const std::string& id, LinAlgObject obj) {
         s_registry.insert_or_assign(id, std::move(obj));
@@ -123,11 +125,10 @@ public:
     const auto& get_all() const {return s_registry;}
     size_t count() const {return s_registry.size();}
 
-    // ====================================================================================================
     // STORE sandbox data written back to filename
-    // ====================================================================================================
-    void save() const {
+    void save_sandbox() const {
         sqlite3* db;
+        fs::path s_filepath = saved_data_dir / active_filename;
         if (sqlite3_open(s_filepath.string().c_str(), &db) != SQLITE_OK) {
             throw std::runtime_error("Failed to open SQLite database for writing.");
         }
@@ -196,5 +197,19 @@ public:
 
         sqlite3_close(db);
         std::cout << "Successfully saved sandbox to: " << s_filepath.filename() << "\n";
+    }
+
+    // Save then delete previous sandbox, switch and load new sandbox
+    void switch_sandbox(const std::string& new_filename) {
+        // Store current data to disk
+        save_sandbox();
+
+        // Kill the memory spike: Assigning an empty map forces the immediate 
+        // destruction of all heavy variants/vectors AND drops the bucket allocation.
+        s_registry = std::unordered_map<std::string, LinAlgObject>(); 
+
+        // Re-target the path and read the new database
+        active_filename = new_filename;
+        load_sandbox();
     }
 };

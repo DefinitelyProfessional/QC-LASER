@@ -5,6 +5,7 @@
 
 #include <filesystem>
 #include <iostream>
+#include <optional>
 #include <chrono>
 #include <thread>
 #include <string>
@@ -22,13 +23,21 @@ int main() {
     // Get the file path to the saved-data directory for global use ===========================================
     const fs::path SAVED_DATA_DIR = fs::current_path() / "saved-data";
     if (!fs::exists(SAVED_DATA_DIR)) {fs::create_directories(SAVED_DATA_DIR);}
+    else if (!fs::is_directory(SAVED_DATA_DIR)) {// && fs::exist(SAVED_DATA_DIR)
+        fs::remove(SAVED_DATA_DIR); fs::create_directories(SAVED_DATA_DIR); // Remove rogue n create directory.
+    }
+
+    // Load the Default Sandbox Session being "MAIN_sandbox.db" ===============================================
+    SandboxSessionManager active_sandbox(SAVED_DATA_DIR, "MAIN_sandbox.db");
+
     // WindowManager to handle unified rendering of all windows ===============================================
     STAGE::WindowManager win_manager;
     // Register windows and get their pointers for event listeners ============================================
     UI::SandboxManagerWindow* sandbox_manager = 
         win_manager.RegisterWindow<UI::SandboxManagerWindow>(SAVED_DATA_DIR);
-    sandbox_manager->Event_OnSelectSandbox = [](std::string filename) {
+    sandbox_manager->Event_OnSelectSandbox = [&](std::string filename) {
         std::cout << "SELECTED" << filename << std::endl; // placeholder
+        active_sandbox.switch_sandbox("new.db");
     };
 
 
