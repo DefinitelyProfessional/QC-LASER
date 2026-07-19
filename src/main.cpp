@@ -41,8 +41,11 @@ int main() {
     sandbox_manager->Event_OnSelectSandbox = [&active_sandbox](std::string filename) {
         active_sandbox.switch_sandbox(filename);
     };
-    sandbox_manager->Event_OnCreateSandbox = [](std::string filename) {
-        std::cout << "CREATE : " << filename << std::endl;
+    sandbox_manager->Event_OnCreateSandbox = [&active_sandbox, &sandbox_manager](std::string filename) {
+        if (sandbox_manager->is_valid_new_filename(filename)) {
+            active_sandbox.switch_sandbox(filename);
+            sandbox_manager->refresh_filenames();
+        }
     };
 
     // CORE IMGUI RENDER LOOP =================================================================================

@@ -17,6 +17,7 @@ class SandboxManagerWindow : public UIWindow {
 private:
     fs::path saved_data_dir;
     const std::string& active_filename; // read-only reference from SandboxSessionManager
+    std::string error_buffer = "";
     std::vector<std::string> db_filenames;
     int db_filenames_size;
 
@@ -52,7 +53,44 @@ public:
     }
 
     // Validate new sandbox filename
-    
+    bool is_valid_new_filename(std::string& filename) {
+        // filename guaranteed not empty by UI
+        size_t first_dot = filename.find('.');
+        if (first_dot != std::string::npos) {
+            // If a dot exists, everything from that point to the end MUST be exactly ".db"
+            if (filename.compare(first_dot, std::string::npos, ".db") != 0) {
+                error_buffer = "Dot '.' in filenames must only be '.db' extension.";
+                return false;
+            }
+        // Mutation ONLY occurs here if no dot exists at all
+        } else {filename += ".db";}
+
+        // Reject names missing a base filename (e.g., just ".db")
+        if (filename.length() <= 3) {
+            error_buffer = "That's straight up an invalid filename.";
+            return false;
+        }
+
+        // Replaces whitespace and checks for illegal characters simultaneously
+        for (char& c : filename) {
+            unsigned char uc = static_cast<unsigned char>(c);
+            if (std::isspace(uc)) {c = '_';} 
+            else {
+                // Explicit ASCII bounds check (bypasses slow locale lookups of std::isalnum)
+                bool is_valid_char = (c >= 'a' && c <= 'z') || 
+                                    (c >= 'A' && c <= 'Z') || 
+                                    (c >= '0' && c <= '9') || 
+                                    c == '_' || c == '.';
+                if (!is_valid_char) {
+                    error_buffer = "Filename must only be Alphanumeric or '_' or '.'";
+                    return false;
+                }
+            }
+        }
+
+        return true;
+    }
+
     // Render function definition
     void Render() override {
         if (!is_open) return; // render control
@@ -69,6 +107,9 @@ public:
         ImGui::Separator();
 
         ImGui::Text("Enter New Sandbox Name :");
+        if (!error_buffer.empty()) {
+            ImGui::TextColored(ImVec4(1.0f,0.0f,0.0f,1.0f), "%s", error_buffer.c_str());
+        }
         // Input box for the new file name
         ImGui::InputText("##NewFile", new_sandbox_input, sizeof(new_sandbox_input));
         ImGui::SameLine();
@@ -81,6 +122,8 @@ public:
             }
             // Clear the input box after submission
             new_sandbox_input[0] = '\0'; 
+            // Clear error_buffer as well
+            error_buffer = "";
         }
         ImGui::EndDisabled();
 
