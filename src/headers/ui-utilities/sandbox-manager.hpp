@@ -23,7 +23,7 @@ private:
     int db_filenames_size;
     
     // UI State Trackers
-    std::vector<bool> db_checked;
+    std::vector<bool> selected_delete;
     int selected_delete_count = 0; 
     int selected_index = -1;
     std::string error_buffer = "";
@@ -50,18 +50,16 @@ private:
 
         // Replaces whitespace and checks for illegal characters simultaneously
         for (char& c : filename) {
-            unsigned char uc = static_cast<unsigned char>(c);
-            if (std::isspace(uc)) {c = '_';} 
-            else {
-                // Explicit ASCII bounds check (bypasses slow locale lookups of std::isalnum)
-                bool is_valid_char = (c >= 'a' && c <= 'z') || 
-                                    (c >= 'A' && c <= 'Z') || 
-                                    (c >= '0' && c <= '9') || 
-                                    c == '_' || c == '.';
-                if (!is_valid_char) {
-                    error_buffer = "Filename must only be Alphanumeric or '_' or '.'";
-                    return false;
-                }
+            // Explicit ASCII bounds check (bypasses slow locale lookups of std::isalnum)
+            bool is_valid_char = (
+                (c >= 'a' && c <= 'z') || 
+                (c >= 'A' && c <= 'Z') || 
+                (c >= '0' && c <= '9') || 
+                (c == '_' || c == '.')
+            );
+            if (!is_valid_char) {
+                error_buffer = "Filename must only be Alphanumeric or '_' or '.'";
+                return false;
             }
         }
         error_buffer = "";
@@ -73,29 +71,30 @@ private:
         
         // Collect full paths of all ticked files
         for (int i = 0; i < db_filenames_size; ++i) {
-            if (db_checked[i]) {
+            if (selected_delete[i]) {
                 fs::path full_path = saved_data_dir / db_filenames[i];
                 target_paths.push_back(full_path.wstring());
             }
         }
-
         if (target_paths.empty()) return;
 
         // SHFileOperationW requires a double-null-terminated sequence of strings
-        std::wstring multi_sz;
+        // Win32 API do get quirky, SHFILEOPSTRUCTW designed est Windows 95
+        std::wstring multi_sz; // Construct the quirky input format
         for (const auto& path : target_paths) {
             multi_sz += path;
             multi_sz.push_back(L'\0');
         }
-        multi_sz.push_back(L'\0'); // Second null terminator
+        multi_sz.push_back(L'\0'); // The required second null terminator as end
 
-        SHFILEOPSTRUCTW file_op = {};
-        file_op.wFunc = FO_DELETE;
-        file_op.pFrom = multi_sz.c_str();
+        SHFILEOPSTRUCTW file_op = {}; // Declare operation
+        file_op.wFunc = FO_DELETE; // Commit delete file action
+        file_op.pFrom = multi_sz.c_str(); // Pass the constructed quirky string
         // FOF_ALLOWUNDO is the flag that moves items to the Recycle Bin
-        // FOF_NOCONFIRMATION disables the default Windows prompt (since we made our own)
+        // FOF_NOCONFIRMATION disables the default Windows prompt
         file_op.fFlags = FOF_ALLOWUNDO | FOF_NOCONFIRMATION | FOF_SILENT | FOF_NOERRORUI;
 
+        // System call execution, pass control to Windows File Explorer
         SHFileOperationW(&file_op);
 
         // Refresh the list after deletion
@@ -130,13 +129,12 @@ public:
         db_filenames_size = db_filenames.size();
         selected_index = -1;
         // reset delete sellect system
-        db_checked.assign(db_filenames_size, false);
+        selected_delete.assign(db_filenames_size, false);
         selected_delete_count = 0;
     }
 
     // Render function definition
     void Render() override {
-        if (!is_open) return; // render control
         // Provide a sensible default size, but allow the user to resize it later
         ImGui::SetNextWindowSize(ImVec2(450, 400), ImGuiCond_FirstUseEver);
         ImGui::Begin(window_name.c_str());
@@ -148,23 +146,29 @@ public:
         ImGui::SameLine();
         ImGui::TextColored(ImVec4(1.0f,0.5f,0.0f,1.0f), "%s", active_filename.c_str());
         ImGui::SameLine();
-        if (ImGui::Button("Save")) {
+        if (ImGui::Button("Save###CurrentActiveSaveButton")) {
             if (Event_OnSaveCurrentSandbox) {Event_OnSaveCurrentSandbox();}
             refresh_filenames();
         }
         ImGui::Separator();
 
-        ImGui::Text("Enter New Sandbox Name :");
+        ImGui::Text("Create New Sandbox :");
         if (!error_buffer.empty()) {
             ImGui::TextColored(ImVec4(1.0f,0.0f,0.0f,1.0f), "%s", error_buffer.c_str());
         }
         // Input box for the new file name
-        ImGui::InputText("##NewFile", new_sandbox_input, sizeof(new_sandbox_input));
+        ImGui::InputTextWithHint(
+            "###CreateNewInputText", 
+            "ex : new_sandbox.db", 
+            new_sandbox_input, 
+            sizeof(new_sandbox_input),
+            ImGuiInputTextFlags_CharsNoBlank
+        );
         ImGui::SameLine();
         
         // Only allow creation if the user actually typed something
         ImGui::BeginDisabled(new_sandbox_input[0] == '\0');
-        if (ImGui::Button("Create")) {
+        if (ImGui::Button("Create###CreateNewButton")) {
             std::string filename = std::string(new_sandbox_input);
             if (is_valid_new_filename(filename)) {
                 if (Event_OnCreateSandbox) {Event_OnCreateSandbox(filename);}
@@ -181,16 +185,16 @@ public:
         ImGui::Text("Double-click to select and load file.");
 
         // Refresh Button aligned above the table
-        if (ImGui::Button("Refresh List")) {refresh_filenames();}
+        if (ImGui::Button("Refresh List###RefreshButton")) {refresh_filenames();}
 
         ImGuiTableFlags table_flags = ImGuiTableFlags_RowBg | ImGuiTableFlags_Borders | ImGuiTableFlags_ScrollY;
-        ImVec2 table_size = ImVec2(0.0f, -ImGui::GetFrameHeightWithSpacing() * 1.0f);
+        ImVec2 table_size = ImVec2(0.0f, -ImGui::GetFrameHeightWithSpacing() * 1.1f);
 
         // Changed from 1 column to 2 columns
-        if (ImGui::BeginTable("##SandboxTable", 2, table_flags, table_size)) {
+        if (ImGui::BeginTable("###SandboxFilesTable", 2, table_flags, table_size)) {
             // Setup a narrow, fixed-width column for the checkbox
-            ImGui::TableSetupColumn("##Tick", ImGuiTableColumnFlags_WidthFixed, 20.0f);
-            ImGui::TableSetupColumn("Available Databases :");
+            ImGui::TableSetupColumn("###TickBoxes", ImGuiTableColumnFlags_WidthFixed, 20.0f);
+            ImGui::TableSetupColumn("Available Sandboxes :");
             ImGui::TableHeadersRow();
 
             ImGuiListClipper clipper;
@@ -205,9 +209,9 @@ public:
                     
                     // PushID is required in loops so ImGui can distinguish between checkboxes
                     ImGui::PushID(i);
-                    bool is_checked = db_checked[i];
-                    if (ImGui::Checkbox("##chk", &is_checked)) {
-                        db_checked[i] = is_checked;
+                    bool is_checked = selected_delete[i];
+                    if (ImGui::Checkbox("###checkbox", &is_checked)) {
+                        selected_delete[i] = is_checked;
                         // Update integer counter so we don't have to scan the vector every frame
                         selected_delete_count += (is_checked) ? 1 : -1;
                     }
@@ -234,7 +238,7 @@ public:
 
         // Enable Delete button only if at least one checkbox is ticked
         ImGui::BeginDisabled(selected_delete_count == 0);
-        if (ImGui::Button("Delete Selected File(s)")) {
+        if (ImGui::Button("Delete Selected File(s)###DeleteButton")) {
             ImGui::OpenPopup("Delete Confirmation");
         }
         ImGui::EndDisabled();
@@ -244,15 +248,20 @@ public:
             ImGui::Text("Confirm to move %d file(s) to the Recycle Bin", selected_delete_count);
             ImGui::Separator();
             
-            if (ImGui::Button("Delete", ImVec2(120, 0))) {
+            ImGui::PushStyleColor(ImGuiCol_Button,        IM_COL32(220, 50, 50, 255));
+            ImGui::PushStyleColor(ImGuiCol_ButtonHovered, IM_COL32(255, 70, 70, 255));
+            ImGui::PushStyleColor(ImGuiCol_ButtonActive,  IM_COL32(180, 30, 30, 255));
+            ImGui::PushStyleColor(ImGuiCol_Text,          IM_COL32(255, 255, 255, 255));
+            if (ImGui::Button("Delete###ConfirmDeleteButton", ImVec2(120, 0))) {
                 execute_delete_to_trash();
                 ImGui::CloseCurrentPopup();
             }
-            
+            ImGui::PopStyleColor(4);
+
             ImGui::SetItemDefaultFocus(); // Allows pressing 'Enter' to cancel safely
             ImGui::SameLine();
             
-            if (ImGui::Button("Cancel", ImVec2(120, 0))) {
+            if (ImGui::Button("Cancel###CancelDeleteButton", ImVec2(-FLT_MIN, 0))) {
                 ImGui::CloseCurrentPopup();
             }
             ImGui::EndPopup();
