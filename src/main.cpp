@@ -49,10 +49,7 @@ int main() {
     while (!glfwWindowShouldClose(window)) {
         // FOR FRAME CAPPING : Mark the exact time the frame started 
         auto frameStartTime = std::chrono::high_resolution_clock::now();
-        glfwPollEvents();
-        ImGui_ImplOpenGL3_NewFrame();
-        ImGui_ImplGlfw_NewFrame();
-        ImGui::NewFrame();
+        STAGE::StartRenderLoop();
 
         ImGui::ShowDemoWindow();
         // -----------------------------------------------------------
@@ -62,14 +59,7 @@ int main() {
         // -----------------------------------------------------------
         // Finalize geometry and push to the GPU
         // -----------------------------------------------------------
-        ImGui::Render();
-        int display_w, display_h;
-        glfwGetFramebufferSize(window, &display_w, &display_h);
-        glViewport(0, 0, display_w, display_h);
-        glClearColor(clear_color.x * clear_color.w, clear_color.y * clear_color.w, clear_color.z * clear_color.w, clear_color.w);
-        glClear(GL_COLOR_BUFFER_BIT);
-        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-        glfwSwapBuffers(window);
+        STAGE::EndRenderLoop(window, clear_color);
         // FOR FRAME CAPPING : Calculate how long the CPU took to draw the UI and do the math
         auto frameEndTime = std::chrono::high_resolution_clock::now();
         auto timeSpentComputing = frameEndTime - frameStartTime;

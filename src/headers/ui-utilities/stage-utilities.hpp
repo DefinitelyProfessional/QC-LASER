@@ -40,7 +40,7 @@ namespace STAGE {
         }
 
         // Single unified dispatch call to render every single registered component
-        void RenderAll() {
+        void RenderAll(void) {
             for (const auto& window : windows_registry) {
                 if (window->IsOpen()) {window->Render();}
             }
@@ -115,6 +115,24 @@ namespace STAGE {
         return window;
     }
 
+    // Encapsulates the complete beginning of the render loop =================================================
+    inline void StartRenderLoop(void) {
+        glfwPollEvents();
+        ImGui_ImplOpenGL3_NewFrame();
+        ImGui_ImplGlfw_NewFrame();
+        ImGui::NewFrame();
+    }
+    // Encapsulates the complete end of the render loop =======================================================
+    inline void EndRenderLoop(GLFWwindow* window, ImVec4& clear_color) {
+        ImGui::Render();
+        int display_w, display_h;
+        glfwGetFramebufferSize(window, &display_w, &display_h);
+        glViewport(0, 0, display_w, display_h);
+        glClearColor(clear_color.x * clear_color.w, clear_color.y * clear_color.w, clear_color.z * clear_color.w, clear_color.w);
+        glClear(GL_COLOR_BUFFER_BIT);
+        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+        glfwSwapBuffers(window);
+    }
     // Encapsulates the complete memory cleanup sequence ======================================================
     inline void ShutdownApplication(GLFWwindow* window) {
         ImGui_ImplOpenGL3_Shutdown();
