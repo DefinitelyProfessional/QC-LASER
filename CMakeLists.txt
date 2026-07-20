@@ -1,3 +1,10 @@
+# >>> Configure debug tree in "build_debug"
+# cmake -S . -B build_Debug -G "Ninja" -DCMAKE_BUILD_TYPE=Debug
+# cmake --build build_Debug
+# >>> Configure release tree in "build_release"
+# cmake -S . -B build_Release -G "Ninja" -DCMAKE_BUILD_TYPE=Release
+# cmake --build build_Release
+
 cmake_minimum_required(VERSION 3.20)
 project(QC-LASER CXX RC)
 set(CMAKE_CXX_STANDARD 17)

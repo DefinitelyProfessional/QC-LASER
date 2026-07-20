@@ -1,2 +1,2 @@
-#include "headers/ui-utilities/icon-resource.hpp"
+#include "ui-utilities/icon-resource.hpp"
 IDI_APP_ICON ICON "think.ico"
