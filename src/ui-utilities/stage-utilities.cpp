@@ -1,67 +1,43 @@
-#pragma once
+#include "ui-utilities/stage-utilities.hpp"
 
-#include "imgui.h"
+// Resource ID definition
+#include "ui-utilities/icon-resource.hpp"
+
+// Required thirdparties
 #include "imgui_impl_glfw.h"
 #include "imgui_impl_opengl3.h"
-
 #include <GLFW/glfw3.h>
 
 // Expose GLFW's native Win32 functions
 #define GLFW_EXPOSE_NATIVE_WIN32
 #include <GLFW/glfw3native.h>
 
-// Include the resource ID definition
-#include "icon-resource.hpp"
-// Include general-utilities for UIWindow class
-#include "general-utilities.hpp"
-
-#include <filesystem>
 #include <iostream>
-#include <string>
-#include <vector>
-#include <memory>
 
 namespace fs = std::filesystem;
 
-// Namespace for all STAGE related functionalities include UI initialization and shutdown and more
 namespace STAGE {
-    // Unified class to manage rendering all windows with imgui ===============================================
-    class WindowManager {
-    private:
-        std::vector<std::unique_ptr<UIWindow>> windows_registry;
-    public:
-        // Register a new window dynamically into the ecosystem
-        template <typename T, typename... Args> T* RegisterWindow(Args&&... args) {
-            // Create the derived window instance safely
-            auto window = std::make_unique<T>(std::forward<Args>(args)...);
-            T* rawPtr = window.get();
-            windows_registry.push_back(std::move(window));
-            return rawPtr; // Return pointer so main can bind callbacks immediately
+    // Public
+    void WindowManager::RenderAll() {
+        for (const auto& window : windows_registry) {
+            if (window->IsOpen()) {window->Render();}
         }
+    }
 
-        // Single unified dispatch call to render every single registered component
-        void RenderAll(void) {
-            for (const auto& window : windows_registry) {
-                if (window->IsOpen()) {window->Render();}
-            }
-        }
+    // Public
+    // UIWindow* WindowManager::FindWindow(const std::string& name) {
+    //     for (const auto& window : windows_registry) {
+    //         if (window->GetName() == name) {return window.get();}
+    //     }
+    //     return nullptr;
+    // }
 
-        // Optional: Search for a window dynamically by its ImGui string ID
-        UIWindow* FindWindow(const std::string& name) {
-            for (const auto& window : windows_registry) {
-                if (window->GetName() == name) {return window.get();}
-            }
-            return nullptr;
-        }
-    };
-
-    // Internal robust GLFW error callback ====================================================================
-    inline void glfw_error_callback(int error, const char* description) {
+    // Internal GLFW error callback
+    static void glfw_error_callback(int error, const char* description) {
         std::cerr << "GLFW Error " << error << ": " << description << std::endl;
     }
 
-    // Encapsulates the complete boot sequence for GLFW, OpenGL, and ImGui ====================================
-    inline GLFWwindow* InitializeApplication(int width, int height, const char* TITLE, const fs::path& ROOT) {
+    GLFWwindow* InitializeApplication(int width, int height, const char* TITLE, const fs::path& ROOT) {
         // GLFW Setup
         glfwSetErrorCallback(glfw_error_callback);
         if (!glfwInit()) {return nullptr;}
@@ -115,15 +91,14 @@ namespace STAGE {
         return window;
     }
 
-    // Encapsulates the complete beginning of the render loop =================================================
-    inline void StartRenderLoop(void) {
+    void StartRenderLoop() {
         glfwPollEvents();
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
     }
-    // Encapsulates the complete end of the render loop =======================================================
-    inline void EndRenderLoop(GLFWwindow* window, ImVec4& clear_color) {
+
+    void EndRenderLoop(GLFWwindow* window, ImVec4& clear_color) {
         ImGui::Render();
         int display_w, display_h;
         glfwGetFramebufferSize(window, &display_w, &display_h);
@@ -133,8 +108,8 @@ namespace STAGE {
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
         glfwSwapBuffers(window);
     }
-    // Encapsulates the complete memory cleanup sequence ======================================================
-    inline void ShutdownApplication(GLFWwindow* window) {
+
+    void ShutdownApplication(GLFWwindow* window) {
         ImGui_ImplOpenGL3_Shutdown();
         ImGui_ImplGlfw_Shutdown();
         ImGui::DestroyContext();
@@ -142,5 +117,4 @@ namespace STAGE {
         if (window) {glfwDestroyWindow(window);}
         glfwTerminate();
     }
-
 }

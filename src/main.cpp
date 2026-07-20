@@ -1,11 +1,16 @@
-#include "headers/storage-utilities/storage-utilities.hpp"
-#include "headers/math-core/function-definitions.hpp"
-#include "headers/ui-utilities/stage-utilities.hpp"
-#include "headers/ui-utilities/sandbox-manager.hpp"
+#include "storage-utilities/storage-utilities.hpp"
+#include "math-core/math-functions.hpp"
+#include "ui-utilities/stage-utilities.hpp"
+#include "ui-utilities/sandbox-manager.hpp"
+
+#include <GLFW/glfw3.h>
+#include "imgui.h"
+
+#define WIN32_LEAN_AND_MEAN // Trims down the massive Windows header to speed up compilation
+#include <windows.h>
 
 #include <filesystem>
 #include <iostream>
-#include <optional>
 #include <chrono>
 #include <thread>
 #include <string>
