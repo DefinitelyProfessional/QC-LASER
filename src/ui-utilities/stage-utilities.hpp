@@ -1,6 +1,6 @@
 #pragma once
 
-// Include general-utilities for UIWindow class
+// Include for UIWindow class
 #include "ui-utilities/general-utilities.hpp"
 
 #include "imgui.h"

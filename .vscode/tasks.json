@@ -17,7 +17,7 @@
             "detail": "Task to compile this specific project"
         },
 		{
-            "label": "Compile n Run C++",
+            "label": "Compile n Run C++", // This has to match with keybindings.json
             "type": "process",
             "dependsOn": ["Compile C++"],
             "dependsOrder": "sequence",

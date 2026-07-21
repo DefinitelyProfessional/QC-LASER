@@ -92,10 +92,8 @@ target_include_directories(QC-LASER-ThirdParty PUBLIC
     thirdparty/sqlite3
 )
 
-# Define primary application executable
 add_executable(${PROJECT_NAME} ${APP_SOURCES})
 
-# 'src' as the root include directory allows root-relative includes across modules
 target_include_directories(${PROJECT_NAME} PRIVATE
     src
 )
