@@ -120,6 +120,7 @@ bool SandboxSessionManager::rename(std::string_view old_key, std::string_view ne
     key_str_pool[map_data.key_index] = std::string(new_key);
     sandbox_registry.erase(it);
     sandbox_registry.emplace(new_hash, map_data);
+    return true;
 }
 
 // Public
