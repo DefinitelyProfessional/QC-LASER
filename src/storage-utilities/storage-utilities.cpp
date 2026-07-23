@@ -73,42 +73,53 @@ void SandboxSessionManager::load_sandbox() {
 }
 
 // Public
-bool SandboxSessionManager::remove(std::string_view key) {
+bool SandboxSessionManager::remove(std::string_view key, std::string& err_buffer) {
     uint64_t hash = get_hash_key(key);
     // Get map registry of specified hash
     auto it = sandbox_registry.find(hash);
-    // Specified key has no match
-    if (it == sandbox_registry.end()) {return false;}
+    // Specified key has no match aka doesn't exist
+    if (it == sandbox_registry.end()) {
+        err_buffer = std::string(key) + " doesn't exist.";
+        return false;
+    }
 
     MathObjMap math_obj_map = it->second;
     // Remove the object from its pool
     switch (math_obj_map.type) {
         case MathObjType::GenericVector:
-            swap_pop(generic_vector_pool, math_obj_map.index);
+            swap_pop(generic_vector_pool, math_obj_map.obj_index, math_obj_map.key_index);
             break;
         case MathObjType::GenericMatrix:
-            swap_pop(generic_matrix_pool, math_obj_map.index);
+            swap_pop(generic_matrix_pool, math_obj_map.obj_index, math_obj_map.key_index);
             break;
     }
+
     // Finally remove the map registry
     sandbox_registry.erase(it);
     return true;
 }
 
 // Public
-void SandboxSessionManager::rename(std::string_view old_key, std::string_view new_key) {
+bool SandboxSessionManager::rename(std::string_view old_key, std::string_view new_key, std::string& err_buffer) {
     // Return if there is no change in key
-    if (old_key == new_key) {return;}
-    // Get the map registry under the old_key hash 
-    uint64_t old_hash = get_hash_key(old_key);
-    // nonexistant nodes will return node.empty() = true
-    auto node = sandbox_registry.extract(old_hash);
-    // Replace the old key of the map registry with new_key hash
-    if (!node.empty()) {
-        uint64_t new_hash = get_hash_key(new_key);
-        node.key() = new_hash;
-        sandbox_registry.insert(std::move(node));
-    } // nonexistant nodes with old_key will be ignored
+    if (old_key == new_key) {return false;}
+    // Check if old_key already exists 
+    auto it = sandbox_registry.find(get_hash_key(old_key));
+    if (it == sandbox_registry.end()) {
+        err_buffer = std::string(old_key) + " doesn't exist.";
+        return false;
+    }
+    // Check if new_key already exists
+    uint64_t new_hash = get_hash_key(new_key);
+    if (sandbox_registry.find(new_hash) != sandbox_registry.end()) {
+        err_buffer = std::string(new_key) + " already exists (or hash collision).";
+        return false;
+    }
+    // update key_str and registry hash
+    MathObjMap map_data = it->second;
+    key_str_pool[map_data.key_index] = std::string(new_key);
+    sandbox_registry.erase(it);
+    sandbox_registry.emplace(new_hash, map_data);
 }
 
 // Public
@@ -199,7 +210,7 @@ void SandboxSessionManager::switch_sandbox(const std::string& new_filename) {
 
     // Kill the memory spike by assigning an empty map forces the immediate 
     // destruction of all heavy variants/vectors AND drops the bucket allocation.
-    sandbox_registry = std::unordered_map<uint64_t, MathObjMap>();
+    sandbox_registry = boost::unordered_flat_map<uint64_t, MathObjMap>();
 
     // Re-target the path and read the new database
     active_filename = new_filename;

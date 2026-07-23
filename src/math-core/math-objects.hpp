@@ -40,3 +40,9 @@ struct GenericMatrix {
     // Zero-copy raw pointer exposure for the UI buffer
     inline const std::complex<double>* raw_buffer() const { return m_data.data(); }
 };
+
+// For templates
+enum class MathObjType : uint8_t {
+    GenericVector = 0,
+    GenericMatrix = 1
+};

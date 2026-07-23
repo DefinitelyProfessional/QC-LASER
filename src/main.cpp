@@ -43,11 +43,11 @@ int main() {
     // Register windows and get their pointers for event listeners ============================================
     SandboxManagerWindow* sandbox_manager = 
         win_manager.RegisterWindow<SandboxManagerWindow>(SAVED_DATA_DIR, active_sandbox.get_active_filename());
-    auto switch_func = [&active_sandbox](std::string filename) {
+    auto switch_sandbox = [&active_sandbox](std::string filename) {
         active_sandbox.switch_sandbox(std::move(filename));
     };
-    sandbox_manager->Event_OnSelectSandbox = switch_func;
-    sandbox_manager->Event_OnCreateSandbox = switch_func;
+    sandbox_manager->Event_OnSelectSandbox = switch_sandbox;
+    sandbox_manager->Event_OnCreateSandbox = switch_sandbox;
     sandbox_manager->Event_OnSaveCurrentSandbox = [&active_sandbox]() {active_sandbox.save_sandbox();};
 
     // CORE IMGUI RENDER LOOP =================================================================================
