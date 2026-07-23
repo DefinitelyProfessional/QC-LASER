@@ -63,11 +63,11 @@ private:
         // Swap iff selected_index != last_index
         if (selected_obj_idx != last_obj_idx) {
             // Swap selected with last, note pool[index] is ObjEntry which is movable
-            pool[selected_obj_idx] = std::move(pool[last_obj_idx]);
+            obj_pool[selected_obj_idx] = std::move(obj_pool[last_obj_idx]);
             // Swap selected with last
             key_str_pool[selected_key_idx] = std::move(key_str_pool[last_key_idx]);
             // Effectively update MathObjMap index with moved ObjEntry's hash_key
-            sandbox_registry[pool[selected_obj_idx].hash_key].index = selected_obj_idx;
+            sandbox_registry[obj_pool[selected_obj_idx].hash_key].obj_index = selected_obj_idx;
         }
         obj_pool.pop_back();
         key_str_pool.pop_back();
