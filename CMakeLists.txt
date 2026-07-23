@@ -37,6 +37,7 @@ file(MAKE_DIRECTORY "${BUNDLE_DIR}/saved-data")
 # DEPENDENCY RESOLUTION
 # ---------------------------------------------------------
 find_package(glfw3 CONFIG REQUIRED) 
+find_package(Boost CONFIG REQUIRED)
 find_package(SQLite3 REQUIRED)
 find_package(OpenGL REQUIRED)
 
@@ -138,6 +139,7 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
     QC-LASER-ThirdParty
     glfw
     OpenGL::GL
+    Boost::headers
     SQLite3::SQLite3
 )
 
