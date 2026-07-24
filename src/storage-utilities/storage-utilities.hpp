@@ -38,19 +38,25 @@ private:
     // in memory and tracked with MathObjMap
     boost::unordered_flat_map<uint64_t, MathObjMap> sandbox_registry;
     std::vector<std::string> key_str_pool; // display for user
-    std::vector<ObjEntry<GenericVector>> generic_vector_pool;
-    std::vector<ObjEntry<GenericMatrix>> generic_matrix_pool;
+    std::vector<ObjEntry<RealVector>> real_vector_pool;
+    std::vector<ObjEntry<ComplexVector>> complex_vector_pool;
+    std::vector<ObjEntry<RealMatrix>> real_matrix_pool;
+    std::vector<ObjEntry<ComplexMatrix>> complex_matrix_pool;
 
     // Compile-time routing : return corresponding data pool
     template <typename T> auto& get_pool() {
-        if constexpr (std::is_same_v<T, GenericVector>) return generic_vector_pool;
-        else if constexpr (std::is_same_v<T, GenericMatrix>) return generic_matrix_pool;
+        if constexpr (std::is_same_v<T, RealVector>) return real_vector_pool;
+        else if constexpr (std::is_same_v<T, ComplexVector>) return complex_vector_pool;
+        else if constexpr (std::is_same_v<T, RealMatrix>) return real_matrix_pool;
+        else if constexpr (std::is_same_v<T, ComplexMatrix>) return complex_matrix_pool;
         else static_assert(always_false_v<T>, "Unsupported math object type.");
     }
     // Compile-time routing : return corresponding math object type
     template <typename T> constexpr MathObjType get_type() {
-        if constexpr (std::is_same_v<T, GenericVector>) return MathObjType::GenericVector;
-        else if constexpr (std::is_same_v<T, GenericMatrix>) return MathObjType::GenericMatrix;
+        if constexpr (std::is_same_v<T, RealVector>) return MathObjType::RealVector;
+        else if constexpr (std::is_same_v<T, ComplexVector>) return MathObjType::ComplexVector;
+        else if constexpr (std::is_same_v<T, RealMatrix>) return MathObjType::RealMatrix;
+        else if constexpr (std::is_same_v<T, ComplexMatrix>) return MathObjType::ComplexMatrix;
         else static_assert(always_false_v<T>, "Unsupported math object type.");
     }
     // Compile-time routing : helper to manage delete objects from their pools
@@ -76,7 +82,7 @@ private:
     }
     
     // LOAD sandbox data from specified filename
-    void load_sandbox();
+    void  load_whole_sandbox();
 
 public:
     // SandboxSessionManager Constructor
@@ -148,8 +154,8 @@ public:
     bool rename(std::string_view old_key, std::string_view new_key, std::string& err_buffer);
 
     // STORE sandbox data written back to filename
-    void save_sandbox() const;
+    void save_whole_sandbox() const;
 
     // Save then delete previous sandbox, switch and load new sandbox
-    void switch_sandbox(const std::string& new_filename);
+    void  switch_whole_sandbox(const std::string& new_filename);
 };

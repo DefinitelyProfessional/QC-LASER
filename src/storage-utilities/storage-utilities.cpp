@@ -4,15 +4,16 @@
 #include <stdexcept>
 #include <iostream>
 #include <cstring>
+#include <H5Cpp.h>
 
 namespace fs = std::filesystem;
 
 // Constructor Implementation
 SandboxSessionManager::SandboxSessionManager(const fs::path& data_dir, const std::string& filename) :
-    saved_data_dir(data_dir), active_filename(filename) {load_sandbox();}
+    saved_data_dir(data_dir), active_filename(filename) {load_whole_sandbox();}
 
 // Private
-void SandboxSessionManager::load_sandbox() {
+void SandboxSessionManager:: load_whole_sandbox() {
     fs::path s_filepath = saved_data_dir / active_filename;
     if (!fs::exists(s_filepath)) {
         std::cout << "[SANDBOX] Creating new sandbox session targeting: " << s_filepath.filename() << "\n";
@@ -20,6 +21,7 @@ void SandboxSessionManager::load_sandbox() {
     }
     else {std::cout << "[SANDBOX] Loading existing sandbox session from: " << s_filepath.filename() << "\n";}
 
+    H5::Exception::dontPrint();
     // TODO
 
     std::cout << "[SANDBOX] Successfully loaded sandbox from: " << s_filepath.filename() << "\n";
@@ -39,11 +41,17 @@ bool SandboxSessionManager::remove(std::string_view key, std::string& err_buffer
     MathObjMap math_obj_map = it->second;
     // Remove the object from its pool
     switch (math_obj_map.type) {
-        case MathObjType::GenericVector:
-            swap_pop(generic_vector_pool, math_obj_map.obj_index, math_obj_map.key_index);
+        case MathObjType::RealVector:
+            swap_pop(real_vector_pool, math_obj_map.obj_index, math_obj_map.key_index);
             break;
-        case MathObjType::GenericMatrix:
-            swap_pop(generic_matrix_pool, math_obj_map.obj_index, math_obj_map.key_index);
+        case MathObjType::ComplexVector:
+            swap_pop(complex_vector_pool, math_obj_map.obj_index, math_obj_map.key_index);
+            break;
+        case MathObjType::RealMatrix:
+            swap_pop(real_matrix_pool, math_obj_map.obj_index, math_obj_map.key_index);
+            break;
+        case MathObjType::ComplexMatrix:
+            swap_pop(complex_matrix_pool, math_obj_map.obj_index, math_obj_map.key_index);
             break;
     }
 
@@ -57,8 +65,8 @@ bool SandboxSessionManager::rename(std::string_view old_key, std::string_view ne
     // Return if there is no change in key
     if (old_key == new_key) {return false;}
     // Check if old_key already exists 
-    auto it = sandbox_registry.find(get_hash_key(old_key));
-    if (it == sandbox_registry.end()) {
+    auto old_it = sandbox_registry.find(get_hash_key(old_key));
+    if (old_it == sandbox_registry.end()) {
         err_buffer = std::string(old_key) + " doesn't exist.";
         return false;
     }
@@ -69,19 +77,18 @@ bool SandboxSessionManager::rename(std::string_view old_key, std::string_view ne
         return false;
     }
     // update key_str and registry hash
-    MathObjMap map_data = it->second;
-    key_str_pool[map_data.key_index] = std::string(new_key);
-    sandbox_registry.erase(it);
-    sandbox_registry.emplace(new_hash, map_data);
+    MathObjMap old_map_data = old_it->second;
+    key_str_pool[old_map_data.key_index] = std::string(new_key);
+    sandbox_registry.erase(old_it);
+    sandbox_registry.emplace(new_hash, old_map_data);
     return true;
 }
 
 // Public
-void SandboxSessionManager::save_sandbox() const {
+void SandboxSessionManager::save_whole_sandbox() const {
     fs::path s_filepath = saved_data_dir / active_filename;
     if (!fs::exists(s_filepath)) {
         std::cout << "[SANDBOX] Saving new sandbox session targeting: " << s_filepath.filename() << "\n";
-        return; // There is nothing to load, exit.
     }
     else {std::cout << "[SANDBOX] Saving existing sandbox session from: " << s_filepath.filename() << "\n";}
 
@@ -91,9 +98,9 @@ void SandboxSessionManager::save_sandbox() const {
 }
 
 // Public
-void SandboxSessionManager::switch_sandbox(const std::string& new_filename) {
+void SandboxSessionManager:: switch_whole_sandbox(const std::string& new_filename) {
     // Store current data to disk
-    save_sandbox();
+    save_whole_sandbox();
 
     // Kill the memory spike by assigning an empty map forces the immediate 
     // destruction of all heavy variants/vectors AND drops the bucket allocation.
@@ -101,5 +108,5 @@ void SandboxSessionManager::switch_sandbox(const std::string& new_filename) {
 
     // Re-target the path and read the new database
     active_filename = new_filename;
-    load_sandbox();
+     load_whole_sandbox();
 }

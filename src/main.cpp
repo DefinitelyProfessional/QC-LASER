@@ -43,12 +43,12 @@ int main() {
     // Register windows and get their pointers for event listeners ============================================
     SandboxManagerWindow* sandbox_manager = 
         win_manager.RegisterWindow<SandboxManagerWindow>(SAVED_DATA_DIR, active_sandbox.get_active_filename());
-    auto switch_sandbox = [&active_sandbox](std::string filename) {
-        active_sandbox.switch_sandbox(std::move(filename));
+    auto  switch_whole_sandbox = [&active_sandbox](std::string filename) {
+        active_sandbox. switch_whole_sandbox(std::move(filename));
     };
-    sandbox_manager->Event_OnSelectSandbox = switch_sandbox;
-    sandbox_manager->Event_OnCreateSandbox = switch_sandbox;
-    sandbox_manager->Event_OnSaveCurrentSandbox = [&active_sandbox]() {active_sandbox.save_sandbox();};
+    sandbox_manager->Event_OnSelectSandbox =  switch_whole_sandbox;
+    sandbox_manager->Event_OnCreateSandbox =  switch_whole_sandbox;
+    sandbox_manager->Event_OnSaveCurrentSandbox = [&active_sandbox]() {active_sandbox.save_whole_sandbox();};
 
     // CORE IMGUI RENDER LOOP =================================================================================
     while (!glfwWindowShouldClose(window)) {
@@ -73,7 +73,7 @@ int main() {
     // ========================================================================================================
 
     // Deallocate everything and exit =========================================================================
-    active_sandbox.save_sandbox(); // Save current data before exit
+    active_sandbox.save_whole_sandbox(); // Save current data before exit
     STAGE::ShutdownApplication(window);
     // ========================================================================================================
     std::cout << "End of Program : Thank you and see you later." << std::endl;
