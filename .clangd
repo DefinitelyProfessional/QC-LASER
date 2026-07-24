@@ -6,3 +6,6 @@ InlayHints:
   Enabled: Yes
   ParameterNames: Yes
   DeducedTypes: Yes
+
+CompileFlags:
+  CompilationDatabase: build_Debug
