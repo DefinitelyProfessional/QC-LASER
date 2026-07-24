@@ -1,9 +1,7 @@
 #include "storage-utilities/storage-utilities.hpp"
 
-#include <functional>
-#include <stdexcept>
 #include <iostream>
-#include <cstring>
+#include <filesystem>
 #include <H5Cpp.h>
 
 namespace fs = std::filesystem;

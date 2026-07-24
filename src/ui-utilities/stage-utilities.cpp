@@ -4,16 +4,31 @@
 #include "ui-utilities/icon-resource.hpp"
 
 // Required thirdparties
-#include "imgui_impl_glfw.h"
 #include "imgui_impl_opengl3.h"
+#include "imgui_impl_glfw.h"
+#include <imgui.h>
+
 #include <GLFW/glfw3.h>
+#include <GL/gl.h>
+
+#include <H5Exception.h>
 #include <H5Cpp.h>
 
 // Expose GLFW's native Win32 functions
 #define GLFW_EXPOSE_NATIVE_WIN32
 #include <GLFW/glfw3native.h>
 
+
+#include <libloaderapi.h>
+#include <minwindef.h>
+#include <windows.h>
+#include <windef.h>
+
+#include <filesystem>
 #include <iostream>
+#include <cstddef>
+#include <string>
+
 
 namespace fs = std::filesystem;
 

@@ -1,9 +1,17 @@
 #include "ui-utilities/sandbox-manager.hpp"
+#include "ui-utilities/general-utilities.hpp"
 
 #include "imgui.h"
+
 #include <windows.h>
 #include <shellapi.h>
+
+#include <filesystem>
 #include <stdexcept>
+#include <cstddef>
+#include <vector>
+#include <string>
+#include <cfloat>
 
 namespace fs = std::filesystem;
 

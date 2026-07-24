@@ -2,10 +2,11 @@
 
 #include "math-core/math-objects.hpp"
 
-#include <boost/unordered/unordered_flat_map.hpp>
+#include <boost/unordered/unordered_flat_map.hpp> // IWYU pragma: export
 #include <type_traits>
 #include <string_view>
 #include <filesystem>
+#include <functional>
 #include <cstdint>
 #include <cstddef>
 #include <vector>

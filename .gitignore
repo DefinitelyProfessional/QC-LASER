@@ -42,8 +42,6 @@
 # Build directories
 build_Debug/
 build_Release/
-Build/
-build-*/
 
 # CMake generated files
 CMakeFiles/

@@ -1,5 +1,11 @@
 #include "math-core/math-objects.hpp"
+
 #include <stdexcept>
+#include <cstddef>
+#include <complex>
+#include <utility>
+#include <vector>
+
 
 // Constructor Implementation
 RealVector::RealVector(size_t dim) :

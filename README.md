@@ -2,11 +2,13 @@
 # QC - LASER 
 "The R stands for **Remarkable** Edition and definitely not as filler to make the acronym work because 'LASE just doesn't sound as good'." - Stephen Matthews 2026
 
+
 ---
 #### Made with Dear ImGui v1.92.8 by OCornut and contributors. 
 Implementations of Linear Algebra concepts relevant to Quantum Computing made into a sandbox engine for testing and learning purposes. Have a hands-on experience with the mathematical foundations of quantum computing. Go explore and manipulate linear algebra objects and operations in a sandbox environment.
 
-## Production environment
+
+## Build System
 A `CMakeLists.txt` file is provided in the root directory. There are two build versions available, `debug` and `release` versions. Configure the project with CMake by running the command:
 ```bash
 cmake -S . -B build_Debug -G "Ninja" -DCMAKE_BUILD_TYPE=Debug
@@ -20,6 +22,7 @@ cmake --build build_Debug
 cmake --build build_Release
 ```
 
+
 ## How to Run
 The executable will be created in the `build_${buildType}` folder. To run the executable, use the command from root directory:
 ```bash
@@ -28,14 +31,6 @@ The executable will be created in the `build_${buildType}` folder. To run the ex
 ```
 or run the executable directly from your IDE or use the `Compile n Run C++` task.
 
-## tasks.json
-this repository contains a `.vscode` directory to help you set up build and run tasks if you are using VSCode as your IDE. You can find the `tasks.json` file in the `.vscode` directory. The tasks are already set up to compile and run the project using the commands mentioned above.  
-> a task named `Compile C++` to automate compiling the project.with one press of a button.
-
-> a task named `Compile n Run C++` can be set to a keybind as well to automate running the project for quick tests.
-
-> Both task names can be set to a keybind in your `keybindings.json` settings.
----
 
 ## Development environment
 `CMakeLists.txt` file will handle finding and linking required libraries automatically. This project is made with the following software:
@@ -55,3 +50,15 @@ pacman -S mingw-w64-ucrt-x86_64-toolchain \
  mingw-w64-ucrt-x86_64-hdf5 \
  mingw-w64-ucrt-x86_64-pkgconf
 ```
+
+## Miscellaneous
+#### .vscode
+An anti-pattern they said, but so long as the folder don't got no private info i'm keepin it in the repo for ease of use.This repository contains a `.vscode` directory to set up build and run tasks if you are using VSCode as your IDE. The `tasks.json` file in the said directory is set to compile and run the project using the following commands :  
+> a task named `Compile C++` to automate compiling the project.with one press of a button.
+
+> a task named `Compile n Run C++` can be set to a keybind as well to automate running the project for quick tests.
+
+> Both task names can be set to a keybind in your `keybindings.json` settings.
+#### IWYU with `clangd` language engine  
+
+At some point I decided to incorporate IWYU with clangd as the langguage engine for this project on top of the default Intellisense n friends. Expect alot of includes. Some setup for clangd is present in the repository.
