@@ -21,23 +21,16 @@ namespace fs = std::filesystem;
 const std::chrono::duration<double, std::milli> targetFrameTime(1000.0 / 60.0);
 
 int main() {
-    // Get the file path to the saved-data directory for global use ===========================================
-    wchar_t buffer[MAX_PATH]; GetModuleFileNameW(NULL, buffer, MAX_PATH);
-    const fs::path ROOT_DIR = fs::path(buffer).parent_path();
-    const fs::path SAVED_DATA_DIR = ROOT_DIR / "saved-data";
-    if (!fs::exists(SAVED_DATA_DIR)) {fs::create_directories(SAVED_DATA_DIR);}
-    else if (!fs::is_directory(SAVED_DATA_DIR)) {// && fs::exist(SAVED_DATA_DIR)
-        fs::remove(SAVED_DATA_DIR); fs::create_directories(SAVED_DATA_DIR); // Remove rogue n create directory.
-    }
-
-    // IMGUI SUBSYSTEMS INITIALIZATION ========================================================================
+    fs::path ROOT_DIR, SAVED_DATA_DIR, ASSETS_DIR;
+    STAGE::InitializeDirectories(ROOT_DIR, SAVED_DATA_DIR, ASSETS_DIR);
+    // IMGUI UI SUBSYSTEMS INITIALIZATION =====================================================================
     GLFWwindow* window = STAGE::InitializeApplication(750, 1000, "QC Linear Algebra Sandbox Engine R.", ROOT_DIR);
     if (!window) {std::cerr << "Fatal Error: Failed to initialize application stages." << std::endl; return -1;}
     ImVec4 clear_color = ImVec4(0.12f, 0.12f, 0.14f, 1.00f);
     // ========================================================================================================
 
-    // Load the Default Sandbox Session being "MAIN_sandbox.db" ===============================================
-    SandboxSessionManager active_sandbox(SAVED_DATA_DIR, "MAIN_sandbox.db");
+    // Load the Default Sandbox Session being "MAIN_sandbox.h5" ===============================================
+    SandboxSessionManager active_sandbox(SAVED_DATA_DIR, "MAIN_sandbox.h5");
     // WindowManager to handle unified rendering of all windows ===============================================
     STAGE::WindowManager win_manager;
     // Register windows and get their pointers for event listeners ============================================

@@ -18,15 +18,15 @@ bool SandboxManagerWindow::is_valid_new_filename(std::string& filename) {
     // filename guaranteed not empty by UI
     size_t first_dot = filename.find('.');
     if (first_dot != std::string::npos) {
-        // If a dot exists, everything from that point to the end MUST be exactly ".db"
-        if (filename.compare(first_dot, std::string::npos, ".db") != 0) {
-            error_buffer = "Dot '.' in filenames must only be '.db' extension.";
+        // If a dot exists, everything from that point to the end MUST be exactly ".h5"
+        if (filename.compare(first_dot, std::string::npos, ".h5") != 0) {
+            error_buffer = "Dot '.' in filenames must only be '.h5' extension.";
             return false;
         }
     // Mutation ONLY occurs here if no dot exists at all
-    } else {filename += ".db";}
+    } else {filename += ".h5";}
 
-    // Reject names missing a base filename (e.g., just ".db")
+    // Reject names missing a base filename (e.g., just ".h5")
     if (filename.length() <= 3) {
         error_buffer = "That's straight up an invalid filename.";
         return false;
@@ -92,9 +92,9 @@ void SandboxManagerWindow::refresh_filenames() {
     if (!fs::exists(saved_data_dir) || !fs::is_directory(saved_data_dir)) {
         throw std::invalid_argument("Sandbox data directory not found.");
     }
-    // Populate db_filenames with currently present .db files
+    // Populate db_filenames with currently present .h5 files
     for (const auto& entry : fs::directory_iterator(saved_data_dir)) {
-        if (entry.is_regular_file() && entry.path().extension() == ".db") {
+        if (entry.is_regular_file() && entry.path().extension() == ".h5") {
             db_filenames.push_back(entry.path().filename().string());
         }
     }
@@ -132,7 +132,7 @@ void SandboxManagerWindow::Render() {
     // Input box for the new file name
     ImGui::InputTextWithHint(
         "###CreateNewInputText", 
-        "ex : new_sandbox.db", 
+        "ex : new_sandbox.h5", 
         new_sandbox_input, 
         sizeof(new_sandbox_input),
         ImGuiInputTextFlags_CharsNoBlank

@@ -12,21 +12,6 @@ namespace fs = std::filesystem;
 SandboxSessionManager::SandboxSessionManager(const fs::path& data_dir, const std::string& filename) :
     saved_data_dir(data_dir), active_filename(filename) {load_whole_sandbox();}
 
-// Private
-void SandboxSessionManager:: load_whole_sandbox() {
-    fs::path s_filepath = saved_data_dir / active_filename;
-    if (!fs::exists(s_filepath)) {
-        std::cout << "[SANDBOX] Creating new sandbox session targeting: " << s_filepath.filename() << "\n";
-        return; // There is nothing to load, exit.
-    }
-    else {std::cout << "[SANDBOX] Loading existing sandbox session from: " << s_filepath.filename() << "\n";}
-
-    H5::Exception::dontPrint();
-    // TODO
-
-    std::cout << "[SANDBOX] Successfully loaded sandbox from: " << s_filepath.filename() << "\n";
-}
-
 // Public
 bool SandboxSessionManager::remove(std::string_view key, std::string& err_buffer) {
     uint64_t hash = get_hash_key(key);
@@ -82,19 +67,6 @@ bool SandboxSessionManager::rename(std::string_view old_key, std::string_view ne
     sandbox_registry.erase(old_it);
     sandbox_registry.emplace(new_hash, old_map_data);
     return true;
-}
-
-// Public
-void SandboxSessionManager::save_whole_sandbox() const {
-    fs::path s_filepath = saved_data_dir / active_filename;
-    if (!fs::exists(s_filepath)) {
-        std::cout << "[SANDBOX] Saving new sandbox session targeting: " << s_filepath.filename() << "\n";
-    }
-    else {std::cout << "[SANDBOX] Saving existing sandbox session from: " << s_filepath.filename() << "\n";}
-
-    // TODO
-
-    std::cout << "[SANDBOX] Successfully saved sandbox to: " << s_filepath.filename() << "\n";
 }
 
 // Public

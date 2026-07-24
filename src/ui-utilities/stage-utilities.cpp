@@ -7,6 +7,7 @@
 #include "imgui_impl_glfw.h"
 #include "imgui_impl_opengl3.h"
 #include <GLFW/glfw3.h>
+#include <H5Cpp.h>
 
 // Expose GLFW's native Win32 functions
 #define GLFW_EXPOSE_NATIVE_WIN32
@@ -31,6 +32,28 @@ namespace STAGE {
     //     }
     //     return nullptr;
     // }
+
+    void InitializeDirectories(std::filesystem::path& ROOT, 
+        std::filesystem::path& SAVED_DATA_DIR, std::filesystem::path& ASSETS_DIR) {
+        // Setup HDF5 to enable manual control over HDF5 error handling
+        H5::Exception::dontPrint();
+        // Reliable way to obtain the executable's root directory for Windows11
+        wchar_t buffer[MAX_PATH]; GetModuleFileNameW(NULL, buffer, MAX_PATH);
+        ROOT = fs::path(buffer).parent_path();
+
+        // Ensure saved-data directory exists
+        SAVED_DATA_DIR = ROOT / "saved-data";
+        if (!fs::exists(SAVED_DATA_DIR)) {fs::create_directories(SAVED_DATA_DIR);}
+        else if (!fs::is_directory(SAVED_DATA_DIR)) {// && fs::exist(SAVED_DATA_DIR)
+            fs::remove(SAVED_DATA_DIR); fs::create_directories(SAVED_DATA_DIR); // Remove rogue n create directory.
+        }
+        // Ensure assets directory exists
+        ASSETS_DIR = ROOT / "assets";
+        if (!fs::exists(ASSETS_DIR)) {fs::create_directories(ASSETS_DIR);}
+        else if (!fs::is_directory(ASSETS_DIR)) {// && fs::exist(SAVED_DATA_DIR)
+            fs::remove(ASSETS_DIR); fs::create_directories(ASSETS_DIR); // Remove rogue n create directory.
+        }
+    }
 
     // Internal GLFW error callback
     static void glfw_error_callback(int error, const char* description) {

@@ -40,6 +40,9 @@ namespace STAGE {
         // Optional: Search for a window dynamically by its ImGui string ID
         // UIWindow* FindWindow(const std::string& name);
     };
+    // Get the file path to ROOT, saved-data, and assets directory for global use
+    void InitializeDirectories(std::filesystem::path& ROOT, 
+        std::filesystem::path& SAVED_DATA_DIR, std::filesystem::path& ASSETS_DIR);
 
     // Encapsulates the complete boot sequence for GLFW, OpenGL, and ImGui
     GLFWwindow* InitializeApplication(int width, int height, const char* TITLE, const std::filesystem::path& ROOT);

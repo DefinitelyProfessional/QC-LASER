@@ -52,18 +52,20 @@ find_package(HDF5 COMPONENTS CXX REQUIRED)
 set(APP_SOURCES
     src/main.cpp
     src/app.rc
-    src/math-core/math-functions.cpp
     src/math-core/math-functions.hpp
-    src/math-core/math-objects.cpp
+    src/math-core/math-functions.cpp
     src/math-core/math-objects.hpp
-    src/storage-utilities/storage-utilities.cpp
+    src/math-core/math-objects.cpp
     src/storage-utilities/storage-utilities.hpp
-    src/ui-utilities/general-utilities.cpp
+    src/storage-utilities/storage-utilities.cpp
+    src/storage-utilities/write-actions.cpp
+    src/storage-utilities/read-actions.cpp
     src/ui-utilities/general-utilities.hpp
-    src/ui-utilities/sandbox-manager.cpp
+    src/ui-utilities/general-utilities.cpp
     src/ui-utilities/sandbox-manager.hpp
-    src/ui-utilities/stage-utilities.cpp
+    src/ui-utilities/sandbox-manager.cpp
     src/ui-utilities/stage-utilities.hpp
+    src/ui-utilities/stage-utilities.cpp
     src/ui-utilities/icon-resource.hpp
 )
 
