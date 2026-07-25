@@ -1,16 +1,18 @@
 #include "data-utilities/data-utilities.hpp"
 #include "ui-utilities/stage-utilities.hpp"
-#include "ui-utilities/sandbox-manager.hpp"
+#include "ui-utilities/ui-windows.hpp"
+#include "thread-core/thread-pool.hpp"
 
 #include <GLFW/glfw3.h>
 #include "imgui.h"
 
-#define WIN32_LEAN_AND_MEAN // Trims down the massive Windows header to speed up compilation
+#define WIN32_LEAN_AND_MEAN // Trim down Windows header
 #include <windows.h>
 
 #include <filesystem>
 #include <iostream>
 #include <utility>
+#include <memory>
 #include <chrono>
 #include <thread>
 #include <string>
@@ -21,7 +23,12 @@ namespace fs = std::filesystem;
 // Define target frame duration (1000 milliseconds / 60 FPS = 16.666 ms per frame)
 constexpr std::chrono::duration<double, std::milli> targetFrameTime(1000.0 / 60.0);
 
+// Global pointer to Thread Pool
+std::unique_ptr<ThreadPool> global_TP;
+
 int main() {
+    // Initialize Thread Pool and directory locations =========================================================
+    global_TP = std::make_unique<ThreadPool>(3);
     fs::path ROOT_DIR, SAVED_DATA_DIR, ASSETS_DIR;
     STAGE::InitializeDirectories(ROOT_DIR, SAVED_DATA_DIR, ASSETS_DIR);
     // IMGUI UI SUBSYSTEMS INITIALIZATION =====================================================================
@@ -71,11 +78,12 @@ int main() {
     // ========================================================================================================
 
 
-    // Deallocate everything and exit =========================================================================
+    // DEALLOCATE EVERYTHING AND EXIT =========================================================================
     std::string err_buffer = "";
     active_sandbox.save_whole_sandbox(err_buffer); // Save current data before exit
     if (!err_buffer.empty()) {std::cout << err_buffer << std::endl;}
     STAGE::ShutdownApplication(host_window);
+    global_TP.reset(); // Destroy all threads
     // ========================================================================================================
     std::cout << "End of Program : Thank you and see you later." << std::endl;
     return 0;

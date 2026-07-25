@@ -1,7 +1,7 @@
 #pragma once
 
 // Include for UIWindow class
-#include "ui-utilities/general-utilities.hpp"
+#include "ui-utilities/general-ui-utilities.hpp"
 
 #include "imgui.h"
 

@@ -1,5 +1,5 @@
-#include "ui-utilities/sandbox-manager.hpp"
-#include "ui-utilities/general-utilities.hpp"
+#include "ui-utilities/ui-windows.hpp"
+#include "ui-utilities/general-ui-utilities.hpp"
 
 #include "imgui.h"
 
@@ -63,7 +63,7 @@ void SandboxManagerWindow::execute_delete_to_trash() {
     std::vector<std::wstring> target_paths;
     
     // Collect full paths of all ticked files
-    for (int i = 0; i < db_filenames_size; ++i) {
+    for (int i = 0; i < db_filenames_size; i++) {
         if (selected_delete[i]) {
             fs::path full_path = saved_data_dir / db_filenames[i];
             target_paths.push_back(full_path.wstring());
