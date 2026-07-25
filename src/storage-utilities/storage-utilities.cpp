@@ -4,6 +4,8 @@
 #include <boost/unordered/unordered_flat_map.hpp> // IWYU pragma: export
 #include <H5Cpp.h>
 
+#include <iostream>
+#include <ostream>
 #include <string_view>
 #include <filesystem>
 #include <string>
@@ -15,7 +17,11 @@ namespace fs = std::filesystem;
 
 // Constructor Implementation
 SandboxSessionManager::SandboxSessionManager(const fs::path& data_dir, const std::string& filename) :
-    saved_data_dir(data_dir), active_filename(filename) {load_whole_sandbox();}
+    saved_data_dir(data_dir), active_filename(filename) {
+        std::string err_buffer = "";
+        load_whole_sandbox(err_buffer);
+        if (!err_buffer.empty()) {std::cout << err_buffer << std::endl;}
+    }
 
 // Public
 bool SandboxSessionManager::remove(std::string_view key, std::string& err_buffer) {
@@ -75,9 +81,9 @@ bool SandboxSessionManager::rename(std::string_view old_key, std::string_view ne
 }
 
 // Public
-void SandboxSessionManager:: switch_whole_sandbox(const std::string& new_filename) {
+void SandboxSessionManager:: switch_whole_sandbox(const std::string& new_filename, std::string& err_buffer) {
     // Store current data to disk
-    save_whole_sandbox();
+    save_whole_sandbox(err_buffer);
 
     // Kill the memory spike by assigning an empty map forces the immediate 
     // destruction of all heavy variants/vectors AND drops the bucket allocation.
@@ -85,5 +91,5 @@ void SandboxSessionManager:: switch_whole_sandbox(const std::string& new_filenam
 
     // Re-target the path and read the new database
     active_filename = new_filename;
-     load_whole_sandbox();
+     load_whole_sandbox(err_buffer);
 }

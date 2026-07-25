@@ -1,9 +1,9 @@
 #include "storage-utilities/storage-utilities.hpp"
-#include "math-core/math-functions.hpp"
 #include "ui-utilities/stage-utilities.hpp"
 #include "ui-utilities/sandbox-manager.hpp"
 
 #include <GLFW/glfw3.h>
+#include <ostream>
 #include "imgui.h"
 
 #define WIN32_LEAN_AND_MEAN // Trims down the massive Windows header to speed up compilation
@@ -11,9 +11,11 @@
 
 #include <filesystem>
 #include <iostream>
+#include <utility>
 #include <chrono>
 #include <thread>
 #include <string>
+#include <ratio>
 
 namespace fs = std::filesystem;
 
@@ -36,12 +38,14 @@ int main() {
     // Register windows and get their pointers for event listeners ============================================
     SandboxManagerWindow* sandbox_manager = 
         win_manager.RegisterWindow<SandboxManagerWindow>(SAVED_DATA_DIR, active_sandbox.get_active_filename());
-    auto  switch_whole_sandbox = [&active_sandbox](std::string filename) {
-        active_sandbox. switch_whole_sandbox(std::move(filename));
+    auto  switch_whole_sandbox = [&active_sandbox, &sandbox_manager](std::string filename) {
+        active_sandbox. switch_whole_sandbox(std::move(filename), sandbox_manager->error_buffer);
     };
     sandbox_manager->Event_OnSelectSandbox =  switch_whole_sandbox;
     sandbox_manager->Event_OnCreateSandbox =  switch_whole_sandbox;
-    sandbox_manager->Event_OnSaveCurrentSandbox = [&active_sandbox]() {active_sandbox.save_whole_sandbox();};
+    sandbox_manager->Event_OnSaveCurrentSandbox = [&active_sandbox, &sandbox_manager]() {
+        active_sandbox.save_whole_sandbox(sandbox_manager->error_buffer);
+    };
 
     // CORE IMGUI RENDER LOOP =================================================================================
     while (!glfwWindowShouldClose(window)) {
@@ -66,7 +70,9 @@ int main() {
     // ========================================================================================================
 
     // Deallocate everything and exit =========================================================================
-    active_sandbox.save_whole_sandbox(); // Save current data before exit
+    std::string err_buffer = "";
+    active_sandbox.save_whole_sandbox(err_buffer); // Save current data before exit
+    if (!err_buffer.empty()) {std::cout << err_buffer << std::endl;}
     STAGE::ShutdownApplication(window);
     // ========================================================================================================
     std::cout << "End of Program : Thank you and see you later." << std::endl;

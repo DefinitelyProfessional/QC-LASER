@@ -20,7 +20,6 @@ private:
     std::vector<bool> selected_delete;
     int selected_delete_count = 0; 
     int selected_index = -1;
-    std::string error_buffer = "";
     char new_sandbox_input[64] = "";
 
     // Validate new sandbox filename
@@ -30,6 +29,7 @@ private:
     void execute_delete_to_trash();
 
 public:
+    std::string error_buffer = "";
     // Event Listeners to be defined in main.cpp
     std::function<void(std::string)> Event_OnSelectSandbox;
     std::function<void(std::string)> Event_OnCreateSandbox;

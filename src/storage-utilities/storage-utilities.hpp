@@ -83,7 +83,7 @@ private:
     }
     
     // LOAD sandbox data from specified filename
-    void  load_whole_sandbox();
+    void  load_whole_sandbox(std::string& err_buffer);
 
 public:
     // SandboxSessionManager Constructor
@@ -155,8 +155,8 @@ public:
     bool rename(std::string_view old_key, std::string_view new_key, std::string& err_buffer);
 
     // STORE sandbox data written back to filename
-    void save_whole_sandbox() const;
+    void save_whole_sandbox(std::string& err_buffer) const;
 
     // Save then delete previous sandbox, switch and load new sandbox
-    void  switch_whole_sandbox(const std::string& new_filename);
+    void  switch_whole_sandbox(const std::string& new_filename, std::string& err_buffer);
 };
