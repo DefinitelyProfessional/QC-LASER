@@ -10,8 +10,8 @@
 
     // 2. Configure clangd to run at max performance
     "clangd.arguments": [
-        // "--compile-commands-dir=${workspaceFolder}/build_${buildType}",
-        "--compile-commands-dir=${workspaceFolder}",
+        "--compile-commands-dir=${workspaceFolder}/build_${buildType}",
+        // "--compile-commands-dir=${workspaceFolder}",
         "--query-driver=C:/msys64/ucrt64/bin/g++.exe,C:/msys64/ucrt64/bin/gcc.exe,C:/msys64/ucrt64/bin/*",
         "--background-index",
         "--clang-tidy",

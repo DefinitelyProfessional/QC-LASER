@@ -97,7 +97,7 @@ public:
     size_t count() const {return sandbox_registry.size();}
 
 
-    // Add an object to sandbox_registry and handle storage
+    // Add an object to sandbox_registry and handle data
     template <typename T> bool add(std::string_view key, T obj, std::string& err_buffer) {
         uint64_t hash = get_hash_key(key);
 

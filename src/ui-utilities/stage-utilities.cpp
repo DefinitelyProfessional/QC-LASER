@@ -23,6 +23,7 @@
 #include <minwindef.h>
 #include <windows.h>
 #include <windef.h>
+#include <timeapi.h>
 
 #include <filesystem>
 #include <iostream>
@@ -76,9 +77,11 @@ namespace STAGE {
     }
 
     GLFWwindow* InitializeApplication(int width, int height, const char* TITLE, const fs::path& ROOT) {
+        // Enable 1ms OS timer resolution for accurate sleep
+        timeBeginPeriod(1);
         // GLFW Setup
         glfwSetErrorCallback(glfw_error_callback);
-        if (!glfwInit()) {return nullptr;}
+        if (!glfwInit()) {timeEndPeriod(1); return nullptr;}
 
         glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
         glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
@@ -89,10 +92,11 @@ namespace STAGE {
         GLFWwindow* window = glfwCreateWindow(width, height, TITLE, nullptr, nullptr);
         if (!window) {
             glfwTerminate();
+            timeEndPeriod(1);
             return nullptr;
         }
         glfwMakeContextCurrent(window);
-        glfwSwapInterval(1); // Enable VSync
+        glfwSwapInterval(0); // Disable VSync for custom 60 FPS
 
         // Apply the native icon
         HWND hwnd = glfwGetWin32Window(window);
@@ -154,5 +158,7 @@ namespace STAGE {
 
         if (window) {glfwDestroyWindow(window);}
         glfwTerminate();
+        // Reset to Windows default timer resolution
+        timeEndPeriod(1);
     }
 }

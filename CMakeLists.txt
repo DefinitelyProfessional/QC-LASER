@@ -56,10 +56,10 @@ set(APP_SOURCES
     src/math-core/math-functions.cpp
     src/math-core/math-objects.hpp
     src/math-core/math-objects.cpp
-    src/storage-utilities/storage-utilities.hpp
-    src/storage-utilities/storage-utilities.cpp
-    src/storage-utilities/write-actions.cpp
-    src/storage-utilities/read-actions.cpp
+    src/data-utilities/data-utilities.hpp
+    src/data-utilities/data-utilities.cpp
+    src/data-utilities/write-actions.cpp
+    src/data-utilities/read-actions.cpp
     src/ui-utilities/general-utilities.hpp
     src/ui-utilities/general-utilities.cpp
     src/ui-utilities/sandbox-manager.hpp
@@ -138,6 +138,7 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
     QC-LASER-ThirdParty
     Boost::headers
     OpenGL::GL
+    winmm
     glfw
     ${HDF5_CXX_LIBRARIES}
     ${HDF5_C_LIBRARIES}
