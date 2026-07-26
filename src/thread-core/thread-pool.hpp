@@ -16,7 +16,7 @@ private:
     std::queue<std::function<void()>> tasks_q;
 
     // Backbone tools for a ThreadPool
-    std::mutex thread_pool_lock;
+    std::mutex thread_pool_lock; // One thread at a time
     std::condition_variable broadcaster;
     std::atomic<bool> shutdown = false;
 
@@ -28,5 +28,5 @@ public:
     ~ThreadPool();
 
     // Assign new tasks for the worker threads
-    void EnqueueTask(std::function<void()> new_task); 
+    void assign_task(std::function<void()> new_task); 
 };

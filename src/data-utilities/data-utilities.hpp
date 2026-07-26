@@ -3,15 +3,18 @@
 #include "math-core/math-objects.hpp"
 
 #include <boost/unordered/unordered_flat_map.hpp> // IWYU pragma: export
+#include <shared_mutex>
 #include <type_traits>
 #include <string_view>
 #include <filesystem>
 #include <functional>
+#include <optional>
+#include <utility>
 #include <cstdint>
 #include <cstddef>
 #include <vector>
 #include <string>
-#include <utility>
+#include <mutex>
 
 struct MathObjMap {
     MathObjType type;
@@ -25,8 +28,12 @@ template<class> inline constexpr bool always_false_v = false;
 // Manage Loading & Storing the Sandbox registry
 class SandboxSessionManager {
 private:
+    // File variables
     std::filesystem::path saved_data_dir;
     std::string active_filename;
+
+    // Tools for multithreading
+    mutable std::shared_mutex sandbox_lock; // Read/Write Lock
 
     // Encapsulate obj_data and hash_key to sync with registry
     template <typename T> struct ObjEntry {
@@ -83,23 +90,42 @@ private:
     }
     
     // LOAD sandbox data from specified filename
-    void  load_whole_sandbox(std::string& err_buffer);
+    void load_whole_sandbox(std::string& err_buffer);
+
+    // Internal implementation for working with shared mutex
+    void load_whole_sandbox_internal(std::string& err_buffer);
+    void save_whole_sandbox_internal(std::string& err_buffer) const;
 
 public:
     // SandboxSessionManager Constructor
     explicit SandboxSessionManager(const std::filesystem::path& data_dir, const std::string& filename);
 
     // return the active sandbox filename string
-    const std::string& get_active_filename() const {return active_filename;}
+    const std::string& get_active_filename() const {
+        // Shared_lock enables other threads to read data but not write
+        std::shared_lock<std::shared_mutex> read_lock(sandbox_lock);
+        return active_filename;
+    }
     // return the vector string of keys for display to the user
-    const std::vector<std::string>& get_key_str() const {return key_str_pool;}
+    const std::vector<std::string>& get_key_str_pool() const {
+        // Shared_lock enables other threads to read data but not write
+        std::shared_lock<std::shared_mutex> read_lock(sandbox_lock);
+        return key_str_pool;
+    }
     // return the amount of objects present in the registry
-    size_t count() const {return sandbox_registry.size();}
+    size_t count() const {
+        // Shared_lock enables other threads to read data but not write
+        std::shared_lock<std::shared_mutex> read_lock(sandbox_lock);
+        return sandbox_registry.size();
+    }
 
 
     // Add an object to sandbox_registry and handle data
     template <typename T> bool add(std::string_view key, T obj, std::string& err_buffer) {
         uint64_t hash = get_hash_key(key);
+
+        // Unique lock guarantees exclusive access to modify sandbox data
+        std::unique_lock<std::shared_mutex> write_lock(sandbox_lock);
 
         // Reject adding objects with the same key_str
         if (sandbox_registry.find(hash) != sandbox_registry.end()) {
@@ -126,26 +152,63 @@ public:
         return true;
     }
 
-
-    // Safely retrieve a POINTER to the requested type, allowing in-place edits
-    // Returns nullptr if the key doesn't exist OR if you ask for the wrong type
-    template<typename T> T* get(std::string_view key, std::string& err_buffer) {
+    // Get a hard copy of the object, registry keeps its original object untouched
+    template<typename T> std::optional<T> get_copy(std::string_view key, std::string& err_buffer) {
         uint64_t hash = get_hash_key(key);
+
+        // Shared_lock enables other threads to read data but not write
+        std::shared_lock<std::shared_mutex> read_lock(sandbox_lock);
+        
         // Get map registry of specified hash
         auto it = sandbox_registry.find(hash);
 
-        // if specified key and its object doesn't exist
+        // If specified key and its object doesn't exist
         if (it == sandbox_registry.end()) {
             err_buffer = std::string(key) + " doesn't exist.";
-            return nullptr;
+            return std::nullopt;
         }
-        // if specified type doesn't match the object's type
+        // If specified type doesn't match the object's type
         if (it->second.type != get_type<T>()) {
             err_buffer = std::string(key) + " object type mismatch.";
-            return nullptr;
+            return std::nullopt;
         }
-        // return a reference to the object stored at its pool
-        return& get_pool<T>()[it->second.obj_index].obj_data;
+        // Return hard copy, registry keeps the original
+        return get_pool<T>()[it->second.obj_index].obj_data;
+    }
+
+    // Move the object out of the registry without copy, registry no longer has the object
+    template<typename T> std::optional<T> get_move(std::string_view key, std::string& err_buffer) {
+        uint64_t hash = get_hash_key(key);
+
+        // Unique lock guarantees exclusive access to modify sandbox data
+        std::unique_lock<std::shared_mutex> write_lock(sandbox_lock);
+        
+        // Get map registry of specified hash
+        auto it = sandbox_registry.find(hash);
+
+        // If specified key and its object doesn't exist
+        if (it == sandbox_registry.end()) {
+            err_buffer = std::string(key) + " doesn't exist.";
+            return std::nullopt;
+        }
+        // If specified type doesn't match the object's type
+        if (it->second.type != get_type<T>()) {
+            err_buffer = std::string(key) + " object type mismatch.";
+            return std::nullopt;
+        }
+        
+        auto& obj_pool = get_pool<T>();
+        MathObjMap selected_map = it->second;
+
+        // Moved the object out of the ObjEntry pool
+        T moved_obj = std::move(obj_pool[selected_map.obj_index].obj_data);
+
+        // Clean the registry of the empty husk
+        swap_pop(obj_pool, selected_map.obj_index, selected_map.key_index);
+        sandbox_registry.erase(it);
+
+        // Return moved object, registry no longer has it
+        return moved_obj;
     }
 
     // Remove an object from sandbox_registry and handle delete

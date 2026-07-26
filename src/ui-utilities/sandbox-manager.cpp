@@ -16,7 +16,7 @@
 namespace fs = std::filesystem;
 
 // Constructor implementation
-SandboxManagerWindow::SandboxManagerWindow(const fs::path& data_dir, const std::string& active_file) : 
+SandboxManagerWindow::SandboxManagerWindow(const fs::path& data_dir, std::string active_file) : 
     UIWindow("Sandbox Manager"), saved_data_dir(data_dir), active_filename(active_file) {
     refresh_filenames();
 }

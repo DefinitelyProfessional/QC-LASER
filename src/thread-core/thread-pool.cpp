@@ -68,7 +68,7 @@ ThreadPool::~ThreadPool() {
 }
 
 // Public
-void ThreadPool::EnqueueTask(std::function<void()> new_task) {
+void ThreadPool::assign_task(std::function<void()> new_task) {
     {// Lock scoping for automatic unique_lock release
         // Queue a new task to the tasks_q
         std::unique_lock<std::mutex> lock(thread_pool_lock);

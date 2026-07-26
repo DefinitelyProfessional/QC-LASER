@@ -2,16 +2,14 @@
 #include "math-core/math-objects.hpp"
 
 #include <boost/unordered/unordered_flat_map.hpp> // IWYU pragma: export
-#include <H5Cpp.h>
 
-#include <iostream>
-#include <ostream>
+#include <shared_mutex>
+#include <stdexcept>
 #include <string_view>
 #include <filesystem>
-#include <string>
 #include <cstdint>
-
-
+#include <string>
+#include <mutex>
 
 namespace fs = std::filesystem;
 
@@ -20,11 +18,14 @@ SandboxSessionManager::SandboxSessionManager(const fs::path& data_dir, const std
     saved_data_dir(data_dir), active_filename(filename) {
         std::string err_buffer = "";
         load_whole_sandbox(err_buffer);
-        if (!err_buffer.empty()) {std::cout << err_buffer << std::endl;}
+        if (!err_buffer.empty()) {throw std::runtime_error(err_buffer);}
     }
 
 // Public
 bool SandboxSessionManager::remove(std::string_view key, std::string& err_buffer) {
+    // Unique lock guarantees exclusive access to modify sandbox data
+    std::unique_lock<std::shared_mutex> write_lock(sandbox_lock);
+    
     uint64_t hash = get_hash_key(key);
     // Get map registry of specified hash
     auto it = sandbox_registry.find(hash);
@@ -34,20 +35,20 @@ bool SandboxSessionManager::remove(std::string_view key, std::string& err_buffer
         return false;
     }
 
-    MathObjMap math_obj_map = it->second;
+    MathObjMap selected_map = it->second;
     // Remove the object from its pool
-    switch (math_obj_map.type) {
+    switch (selected_map.type) {
         case MathObjType::RealVector:
-            swap_pop(real_vector_pool, math_obj_map.obj_index, math_obj_map.key_index);
+            swap_pop(real_vector_pool, selected_map.obj_index, selected_map.key_index);
             break;
         case MathObjType::ComplexVector:
-            swap_pop(complex_vector_pool, math_obj_map.obj_index, math_obj_map.key_index);
+            swap_pop(complex_vector_pool, selected_map.obj_index, selected_map.key_index);
             break;
         case MathObjType::RealMatrix:
-            swap_pop(real_matrix_pool, math_obj_map.obj_index, math_obj_map.key_index);
+            swap_pop(real_matrix_pool, selected_map.obj_index, selected_map.key_index);
             break;
         case MathObjType::ComplexMatrix:
-            swap_pop(complex_matrix_pool, math_obj_map.obj_index, math_obj_map.key_index);
+            swap_pop(complex_matrix_pool, selected_map.obj_index, selected_map.key_index);
             break;
     }
 
@@ -60,6 +61,10 @@ bool SandboxSessionManager::remove(std::string_view key, std::string& err_buffer
 bool SandboxSessionManager::rename(std::string_view old_key, std::string_view new_key, std::string& err_buffer) {
     // Return if there is no change in key
     if (old_key == new_key) {return false;}
+
+    // Unique lock guarantees exclusive access to modify sandbox data
+    std::unique_lock<std::shared_mutex> write_lock(sandbox_lock);
+
     // Check if old_key already exists 
     auto old_it = sandbox_registry.find(get_hash_key(old_key));
     if (old_it == sandbox_registry.end()) {
@@ -82,14 +87,15 @@ bool SandboxSessionManager::rename(std::string_view old_key, std::string_view ne
 
 // Public
 void SandboxSessionManager:: switch_whole_sandbox(const std::string& new_filename, std::string& err_buffer) {
+    // Unique lock guarantees exclusive access to modify sandbox data
+    std::unique_lock<std::shared_mutex> write_lock(sandbox_lock);
     // Store current data to disk
-    save_whole_sandbox(err_buffer);
-
-    // Kill the memory spike by assigning an empty map forces the immediate 
-    // destruction of all heavy variants/vectors AND drops the bucket allocation.
-    sandbox_registry = boost::unordered_flat_map<uint64_t, MathObjMap>();
+    save_whole_sandbox_internal(err_buffer);
+    if (!err_buffer.empty()) {return;} // err check
 
     // Re-target the path and read the new database
     active_filename = new_filename;
-     load_whole_sandbox(err_buffer);
+
+    // Attempt loading
+    load_whole_sandbox_internal(err_buffer);
 }

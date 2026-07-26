@@ -11,8 +11,8 @@
 // Manage Sandbox files, Create, Select, Delete
 class SandboxManagerWindow : public UIWindow {
 private:
-    std::filesystem::path saved_data_dir;
-    const std::string& active_filename; // read-only reference from SandboxSessionManager
+    const std::filesystem::path& saved_data_dir;
+    std::string active_filename;
     std::vector<std::string> db_filenames;
     int db_filenames_size;
     
@@ -29,6 +29,7 @@ private:
     void execute_delete_to_trash();
 
 public:
+    // public error buffer to be changed by main thread only
     std::string error_buffer = "";
     // Event Listeners to be defined in main.cpp
     std::function<void(std::string)> Event_OnSelectSandbox;
@@ -36,7 +37,7 @@ public:
     std::function<void(void)> Event_OnSaveCurrentSandbox;
 
     // Constructor simply sets UIWindow window_name and directory filepath
-    SandboxManagerWindow(const std::filesystem::path& data_dir, const std::string& active_file);
+    SandboxManagerWindow(const std::filesystem::path& data_dir, std::string active_file);
 
     // Refresh filenames and other states and functionalities
     void refresh_filenames();

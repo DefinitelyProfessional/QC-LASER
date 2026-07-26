@@ -24,13 +24,15 @@ namespace fs = std::filesystem;
 constexpr std::chrono::duration<double, std::milli> targetFrameTime(1000.0 / 60.0);
 
 // Global pointer to Thread Pool
-std::unique_ptr<ThreadPool> global_TP;
+std::unique_ptr<ThreadPool> GLOBAL_TP;
 
 int main() {
     // Initialize Thread Pool and directory locations =========================================================
-    global_TP = std::make_unique<ThreadPool>(3);
+    GLOBAL_TP = std::make_unique<ThreadPool>(3);
     fs::path ROOT_DIR, SAVED_DATA_DIR, ASSETS_DIR;
     STAGE::InitializeDirectories(ROOT_DIR, SAVED_DATA_DIR, ASSETS_DIR);
+
+    
     // IMGUI UI SUBSYSTEMS INITIALIZATION =====================================================================
     GLFWwindow* host_window = STAGE::InitializeApplication(750, 1000, "QC Linear Algebra Sandbox Engine R.", ROOT_DIR);
     if (!host_window) {std::cerr << "Fatal Error: Failed to initialize application stages." << std::endl; return -1;}
@@ -46,7 +48,11 @@ int main() {
     SandboxManagerWindow* sandbox_manager = 
         win_manager.RegisterWindow<SandboxManagerWindow>(SAVED_DATA_DIR, active_sandbox.get_active_filename());
     auto  switch_whole_sandbox = [&active_sandbox, &sandbox_manager](std::string filename) {
-        active_sandbox. switch_whole_sandbox(std::move(filename), sandbox_manager->error_buffer);
+        std::string err_buffer;
+        GLOBAL_TP->assign_task([&active_sandbox, &filename, &err_buffer](){
+            active_sandbox. switch_whole_sandbox(std::move(filename), err_buffer);
+        });
+        if (!err_buffer.empty()) {sandbox_manager->error_buffer = err_buffer;}
     };
     sandbox_manager->Event_OnSelectSandbox =  switch_whole_sandbox;
     sandbox_manager->Event_OnCreateSandbox =  switch_whole_sandbox;
@@ -83,7 +89,7 @@ int main() {
     active_sandbox.save_whole_sandbox(err_buffer); // Save current data before exit
     if (!err_buffer.empty()) {std::cout << err_buffer << std::endl;}
     STAGE::ShutdownApplication(host_window);
-    global_TP.reset(); // Destroy all threads
+    GLOBAL_TP.reset(); // Destroy all threads
     // ========================================================================================================
     std::cout << "End of Program : Thank you and see you later." << std::endl;
     return 0;
