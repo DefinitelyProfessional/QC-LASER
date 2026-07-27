@@ -15,15 +15,9 @@
 #include <iostream>
 #include <utility>
 #include <memory>
-#include <chrono>
-#include <thread>
 #include <string>
-#include <ratio>
 
 namespace fs = std::filesystem;
-
-// Define target frame duration (1000 milliseconds / 60 FPS = 16.666 ms per frame)
-constexpr std::chrono::duration<double, std::milli> targetFrameTime(1000.0 / 60.0);
 
 // Global pointer to Thread Pool
 std::unique_ptr<ThreadPool> G_threadpool;
@@ -36,10 +30,11 @@ int main() {
     fs::path ROOT_DIR, SAVED_DATA_DIR, ASSETS_DIR;
     STAGE::InitializeDirectories(ROOT_DIR, SAVED_DATA_DIR, ASSETS_DIR);
 
-    
+
     // IMGUI UI SUBSYSTEMS INITIALIZATION =====================================================================
-    GLFWwindow* host_window = STAGE::InitializeApplication(750, 1000, "QC Linear Algebra Sandbox Engine R.", ROOT_DIR);
-    if (!host_window) {std::cerr << "Fatal Error: Failed to initialize application stages." << std::endl; return -1;}
+    GLFWwindow* host_window = STAGE::InitializeApplication(
+        750, 1000, "QC Linear Algebra Sandbox Engine R.", ROOT_DIR);
+    if (!host_window) {std::cerr << "Fatal Error: Failed to initialize application stages."; return -1;}
     ImVec4 clear_color = ImVec4(0.12f, 0.12f, 0.14f, 1.00f);
     // ========================================================================================================
 
@@ -60,6 +55,7 @@ int main() {
             G_resultpool->enqueue([&active_sandbox, sandbox_win, result = std::move(status)]() {
                 sandbox_win->set_error_buffer(result.success, result.msg);
                 if (result.success) {sandbox_win->set_active_filename(active_sandbox.get_active_filename());}
+                glfwPostEmptyEvent(); // Wake up Main Thread to process UI changes
             });
         });
     };
@@ -73,6 +69,7 @@ int main() {
 
             G_resultpool->enqueue([sandbox_win, result = std::move(status)]{
                 sandbox_win->set_error_buffer(result.success, result.msg);
+                glfwPostEmptyEvent(); // Wake up Main Thread to process UI changes
             });
         });
     };
@@ -80,8 +77,6 @@ int main() {
 
     // CORE IMGUI RENDER LOOP =================================================================================
     while (!glfwWindowShouldClose(host_window)) {
-        // FOR FRAME CAPPING : Mark the exact time the frame started 
-        auto frameStartTime = std::chrono::high_resolution_clock::now();
         STAGE::StartRenderLoop();
 
         ImGui::ShowDemoWindow();
@@ -94,10 +89,6 @@ int main() {
         // Finalize geometry and push to the GPU
         // -----------------------------------------------------------
         STAGE::EndRenderLoop(host_window, clear_color);
-        // FOR FRAME CAPPING : Calculate how long the CPU took to draw the UI and do the math
-        auto frameEndTime = std::chrono::high_resolution_clock::now();
-        auto timeSpentComputing = frameEndTime - frameStartTime;
-        if (timeSpentComputing < targetFrameTime) {std::this_thread::sleep_for(targetFrameTime - timeSpentComputing);}
     }
     // ========================================================================================================
 
