@@ -40,24 +40,24 @@ int main() {
     // ========================================================================================================
 
 
-    // Load the Default Sandbox Session being "MAIN_sandbox.h5" ===============================================
-    SandboxSessionManager active_sandbox(SAVED_DATA_DIR, "MAIN_sandbox.h5");
+    // Load the Default SandboxManager being "MAIN_sandbox.h5" ===============================================
+    SandboxManager active_sandbox(SAVED_DATA_DIR, "MAIN_sandbox.h5");
     // WindowManager to handle unified rendering of all windows ===============================================
     STAGE::WindowManager win_manager;
     // Register windows and get their pointers for event listeners ============================================
-    SandboxManagerWindow* sandbox_manager = 
+    SandboxManagerWindow* sandbox_win = 
         win_manager.RegisterWindow<SandboxManagerWindow>(SAVED_DATA_DIR, active_sandbox.get_active_filename());
-    auto  switch_whole_sandbox = [&active_sandbox, &sandbox_manager](std::string filename) {
+    auto  switch_whole_sandbox = [&active_sandbox, sandbox_win](std::string filename) {
         std::string err_buffer;
         GLOBAL_TP->assign_task([&active_sandbox, &filename, &err_buffer](){
             active_sandbox. switch_whole_sandbox(std::move(filename), err_buffer);
         });
-        if (!err_buffer.empty()) {sandbox_manager->error_buffer = err_buffer;}
+        if (!err_buffer.empty()) {sandbox_win->error_buffer = err_buffer;}
     };
-    sandbox_manager->Event_OnSelectSandbox =  switch_whole_sandbox;
-    sandbox_manager->Event_OnCreateSandbox =  switch_whole_sandbox;
-    sandbox_manager->Event_OnSaveCurrentSandbox = [&active_sandbox, &sandbox_manager]() {
-        active_sandbox.save_whole_sandbox(sandbox_manager->error_buffer);
+    sandbox_win->EVENT_OnSelectSandbox =  switch_whole_sandbox;
+    sandbox_win->EVENT_OnCreateSandbox =  switch_whole_sandbox;
+    sandbox_win->EVENT_OnSaveCurrentSandbox = [&active_sandbox, sandbox_win]() {
+        active_sandbox.save_whole_sandbox(sandbox_win->error_buffer);
     };
 
 

@@ -32,9 +32,9 @@ public:
     // public error buffer to be changed by main thread only
     std::string error_buffer = "";
     // Event Listeners to be defined in main.cpp
-    std::function<void(std::string)> Event_OnSelectSandbox;
-    std::function<void(std::string)> Event_OnCreateSandbox;
-    std::function<void(void)> Event_OnSaveCurrentSandbox;
+    std::function<void(std::string)> EVENT_OnSelectSandbox;
+    std::function<void(std::string)> EVENT_OnCreateSandbox;
+    std::function<void(void)> EVENT_OnSaveCurrentSandbox;
 
     // Constructor simply sets UIWindow window_name and directory filepath
     SandboxManagerWindow(const std::filesystem::path& data_dir, std::string active_file);

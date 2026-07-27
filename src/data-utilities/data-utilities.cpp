@@ -14,7 +14,7 @@
 namespace fs = std::filesystem;
 
 // Constructor Implementation
-SandboxSessionManager::SandboxSessionManager(const fs::path& data_dir, const std::string& filename) :
+SandboxManager::SandboxManager(const fs::path& data_dir, const std::string_view filename) :
     saved_data_dir(data_dir), active_filename(filename) {
         std::string err_buffer = "";
         load_whole_sandbox(err_buffer);
@@ -22,7 +22,7 @@ SandboxSessionManager::SandboxSessionManager(const fs::path& data_dir, const std
     }
 
 // Public
-bool SandboxSessionManager::remove(std::string_view key, std::string& err_buffer) {
+bool SandboxManager::remove(std::string key, std::string& err_buffer) {
     // Unique lock guarantees exclusive access to modify sandbox data
     std::unique_lock<std::shared_mutex> write_lock(sandbox_lock);
     
@@ -58,7 +58,7 @@ bool SandboxSessionManager::remove(std::string_view key, std::string& err_buffer
 }
 
 // Public
-bool SandboxSessionManager::rename(std::string_view old_key, std::string_view new_key, std::string& err_buffer) {
+bool SandboxManager::rename(std::string old_key, std::string new_key, std::string& err_buffer) {
     // Return if there is no change in key
     if (old_key == new_key) {return false;}
 
@@ -86,7 +86,7 @@ bool SandboxSessionManager::rename(std::string_view old_key, std::string_view ne
 }
 
 // Public
-void SandboxSessionManager:: switch_whole_sandbox(const std::string& new_filename, std::string& err_buffer) {
+void SandboxManager:: switch_whole_sandbox(std::string new_target, std::string& err_buffer) {
     // Unique lock guarantees exclusive access to modify sandbox data
     std::unique_lock<std::shared_mutex> write_lock(sandbox_lock);
     // Store current data to disk
@@ -94,7 +94,7 @@ void SandboxSessionManager:: switch_whole_sandbox(const std::string& new_filenam
     if (!err_buffer.empty()) {return;} // err check
 
     // Re-target the path and read the new database
-    active_filename = new_filename;
+    active_filename = new_target;
 
     // Attempt loading
     load_whole_sandbox_internal(err_buffer);

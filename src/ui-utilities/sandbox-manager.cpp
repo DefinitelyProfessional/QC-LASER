@@ -128,7 +128,7 @@ void SandboxManagerWindow::Render() {
     ImGui::TextColored(ImVec4(1.0f,0.5f,0.0f,1.0f), "%s", active_filename.c_str());
     ImGui::SameLine();
     if (ImGui::Button("Save###CurrentActiveSaveButton")) {
-        if (Event_OnSaveCurrentSandbox) {Event_OnSaveCurrentSandbox();}
+        if (EVENT_OnSaveCurrentSandbox) {EVENT_OnSaveCurrentSandbox();}
         refresh_filenames();
     }
     ImGui::Separator();
@@ -152,7 +152,7 @@ void SandboxManagerWindow::Render() {
     if (ImGui::Button("Create###CreateNewButton")) {
         std::string filename = std::string(new_sandbox_input);
         if (is_valid_new_filename(filename)) {
-            if (Event_OnCreateSandbox) {Event_OnCreateSandbox(filename);}
+            if (EVENT_OnCreateSandbox) {EVENT_OnCreateSandbox(filename);}
         }
         // Clear the input box after submission
         new_sandbox_input[0] = '\0';
@@ -209,7 +209,7 @@ void SandboxManagerWindow::Render() {
                 if ((ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left)) ||
                     (ImGui::IsItemFocused() && ImGui::IsKeyPressed(ImGuiKey_Enter))) {
                     selected_index = i;
-                    if (Event_OnSelectSandbox) Event_OnSelectSandbox(db_filenames[selected_index]);
+                    if (EVENT_OnSelectSandbox) EVENT_OnSelectSandbox(db_filenames[selected_index]);
                 }
             }
         }

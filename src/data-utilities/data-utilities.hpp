@@ -26,7 +26,7 @@ struct MathObjMap {
 template<class> inline constexpr bool always_false_v = false;
 
 // Manage Loading & Storing the Sandbox registry
-class SandboxSessionManager {
+class SandboxManager {
 private:
     // File variables
     std::filesystem::path saved_data_dir;
@@ -85,7 +85,7 @@ private:
     }
 
     // Internal key_str hashing for memory efficient mapping 
-    inline uint64_t get_hash_key(std::string_view key_str) const {
+    inline uint64_t get_hash_key(const std::string_view key_str) const {
         return std::hash<std::string_view>{}(key_str);
     }
     
@@ -97,8 +97,8 @@ private:
     void save_whole_sandbox_internal(std::string& err_buffer) const;
 
 public:
-    // SandboxSessionManager Constructor
-    explicit SandboxSessionManager(const std::filesystem::path& data_dir, const std::string& filename);
+    // SandboxManager Constructor
+    explicit SandboxManager(const std::filesystem::path& data_dir, const std::string_view filename);
 
     // return the active sandbox filename string
     const std::string& get_active_filename() const {
@@ -121,7 +121,7 @@ public:
 
 
     // Add an object to sandbox_registry and handle data
-    template <typename T> bool add(std::string_view key, T obj, std::string& err_buffer) {
+    template <typename T> bool add(std::string key, T obj, std::string& err_buffer) {
         uint64_t hash = get_hash_key(key);
 
         // Unique lock guarantees exclusive access to modify sandbox data
@@ -153,7 +153,7 @@ public:
     }
 
     // Get a hard copy of the object, registry keeps its original object untouched
-    template<typename T> std::optional<T> get_copy(std::string_view key, std::string& err_buffer) {
+    template<typename T> std::optional<T> get_copy(std::string key, std::string& err_buffer) {
         uint64_t hash = get_hash_key(key);
 
         // Shared_lock enables other threads to read data but not write
@@ -177,7 +177,7 @@ public:
     }
 
     // Move the object out of the registry without copy, registry no longer has the object
-    template<typename T> std::optional<T> get_move(std::string_view key, std::string& err_buffer) {
+    template<typename T> std::optional<T> get_move(std::string key, std::string& err_buffer) {
         uint64_t hash = get_hash_key(key);
 
         // Unique lock guarantees exclusive access to modify sandbox data
@@ -212,14 +212,14 @@ public:
     }
 
     // Remove an object from sandbox_registry and handle delete
-    bool remove(std::string_view key, std::string& err_buffer);
+    bool remove(std::string key, std::string& err_buffer);
 
     // Dictionary key rename without copying heavy vector data
-    bool rename(std::string_view old_key, std::string_view new_key, std::string& err_buffer);
+    bool rename(std::string old_key, std::string new_key, std::string& err_buffer);
 
     // STORE sandbox data written back to filename
     void save_whole_sandbox(std::string& err_buffer) const;
 
     // Save then delete previous sandbox, switch and load new sandbox
-    void  switch_whole_sandbox(const std::string& new_filename, std::string& err_buffer);
+    void  switch_whole_sandbox(const std::string new_target, std::string& err_buffer);
 };

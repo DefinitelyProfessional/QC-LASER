@@ -15,13 +15,13 @@
 namespace fs = std::filesystem;
 
 // Private
-void SandboxSessionManager::load_whole_sandbox(std::string& err_buffer) {
+void SandboxManager::load_whole_sandbox(std::string& err_buffer) {
     // Unique lock guarantees exclusive access to modify sandbox data
     std::unique_lock<std::shared_mutex> write_lock(sandbox_lock);
     load_whole_sandbox_internal(err_buffer);
 }
 // Private
-void SandboxSessionManager::load_whole_sandbox_internal(std::string& err_buffer) {
+void SandboxManager::load_whole_sandbox_internal(std::string& err_buffer) {
     fs::path s_filepath = saved_data_dir / active_filename;
     if (!fs::exists(s_filepath)) {
         std::cout << "[SANDBOX] Creating new sandbox session targeting: " << s_filepath.filename() << "\n";
