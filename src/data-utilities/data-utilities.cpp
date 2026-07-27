@@ -19,7 +19,7 @@ saved_data_dir(data_dir), active_filename(filename) {
     load_whole_sandbox();
 }
 
-// Public
+// Public [!!!SCALABLE!!!]
 StatusPayload SandboxDataManager::remove(std::string key) {
     // Unique lock guarantees exclusive access to modify sandbox data
     std::unique_lock<std::shared_mutex> write_lock(sandbox_lock);
@@ -54,7 +54,7 @@ StatusPayload SandboxDataManager::remove(std::string key) {
     return {true, "Removed " + key};
 }
 
-// Public
+// Public [!!!SCALABLE!!!]
 StatusPayload SandboxDataManager::rename(std::string old_key, std::string new_key) {
     // Return if there is no change in key
     if (old_key == new_key) {return {false, "Why rename the same key?"};}
@@ -72,9 +72,24 @@ StatusPayload SandboxDataManager::rename(std::string old_key, std::string new_ke
     if (sandbox_registry.find(new_hash) != sandbox_registry.end()) {
         return {false, new_key + " already exists (or hash collision)."};
     }
-    // update key_str and registry hash
+    // Update key_str and registry hash
     MathObjMap old_map_data = old_it->second;
     key_str_pool[old_map_data.key_index] = std::string(new_key);
+    // Update the old ObjEntry hash_key to have the new_hash of renamed key
+    switch (old_map_data.type) {
+        case MathObjType::RealVector:
+            real_vector_pool[old_map_data.obj_index].hash_key = new_hash;
+            break;
+        case MathObjType::ComplexVector:
+            complex_vector_pool[old_map_data.obj_index].hash_key = new_hash;
+            break;
+        case MathObjType::RealMatrix:
+            real_matrix_pool[old_map_data.obj_index].hash_key = new_hash;
+            break;
+        case MathObjType::ComplexMatrix:
+            complex_matrix_pool[old_map_data.obj_index].hash_key = new_hash;
+            break;
+    }
     sandbox_registry.erase(old_it);
     sandbox_registry.emplace(new_hash, old_map_data);
     return {true, old_key + " renamed to " + new_key};

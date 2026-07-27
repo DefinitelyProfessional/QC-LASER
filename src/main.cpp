@@ -32,7 +32,7 @@ int main() {
 
 
     // IMGUI UI SUBSYSTEMS INITIALIZATION =====================================================================
-    GLFWwindow* host_window = STAGE::InitializeApplication(
+    GLFWwindow* host_window = STAGE::InitializeUI(
         750, 1000, "QC Linear Algebra Sandbox Engine R.", ROOT_DIR);
     if (!host_window) {std::cerr << "Fatal Error: Failed to initialize application stages."; return -1;}
     ImVec4 clear_color = ImVec4(0.12f, 0.12f, 0.14f, 1.00f);
@@ -95,7 +95,7 @@ int main() {
 
     // DEALLOCATE EVERYTHING AND EXIT =========================================================================
     active_sandbox.save_whole_sandbox(); // Save current data before exit
-    STAGE::ShutdownApplication(host_window);
+    STAGE::ShutdownUI(host_window);
     G_threadpool.reset(); // Destroy all threads
     G_resultpool.reset(); // Destroy all results
     // ========================================================================================================

@@ -77,7 +77,7 @@ namespace STAGE {
         std::cerr << "GLFW Error " << error << ": " << description << std::endl;
     }
 
-    GLFWwindow* InitializeApplication(int width, int height, const char* TITLE, const fs::path& ROOT) {
+    GLFWwindow* InitializeUI(int width, int height, const char* TITLE, const fs::path& ROOT) {
         // Enable 1ms OS timer resolution for accurate sleep
         // timeBeginPeriod(1);
         // GLFW Setup
@@ -156,7 +156,7 @@ namespace STAGE {
         glfwSwapBuffers(window);
     }
 
-    void ShutdownApplication(GLFWwindow* window) {
+    void ShutdownUI(GLFWwindow* window) {
         ImGui_ImplOpenGL3_Shutdown();
         ImGui_ImplGlfw_Shutdown();
         ImGui::DestroyContext();

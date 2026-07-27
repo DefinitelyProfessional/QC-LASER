@@ -45,7 +45,7 @@ namespace STAGE {
         std::filesystem::path& SAVED_DATA_DIR, std::filesystem::path& ASSETS_DIR);
 
     // Encapsulates the complete boot sequence for GLFW, OpenGL, and ImGui
-    GLFWwindow* InitializeApplication(int width, int height, const char* TITLE, const std::filesystem::path& ROOT);
+    GLFWwindow* InitializeUI(int width, int height, const char* TITLE, const std::filesystem::path& ROOT);
 
     // Encapsulates the complete beginning of the render loop
     void StartRenderLoop();
@@ -54,5 +54,5 @@ namespace STAGE {
     void EndRenderLoop(GLFWwindow* window, const ImVec4& clear_color);
 
     // Encapsulates the complete memory cleanup n shutdown sequence
-    void ShutdownApplication(GLFWwindow* window);
+    void ShutdownUI(GLFWwindow* window);
 }

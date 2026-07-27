@@ -52,7 +52,7 @@ private:
     std::vector<ObjEntry<RealMatrix>> real_matrix_pool;
     std::vector<ObjEntry<ComplexMatrix>> complex_matrix_pool;
 
-    // Compile-time routing : return corresponding data pool
+    // Compile-time routing : return corresponding data pool [!!!SCALABLE!!!]
     template<typename T> auto& get_pool() {
         if constexpr (std::is_same_v<T, RealVector>) return real_vector_pool;
         else if constexpr (std::is_same_v<T, ComplexVector>) return complex_vector_pool;
@@ -60,7 +60,7 @@ private:
         else if constexpr (std::is_same_v<T, ComplexMatrix>) return complex_matrix_pool;
         else static_assert(always_false_v<T>, "Unsupported math object type.");
     }
-    // Compile-time routing : return corresponding math object type
+    // Compile-time routing : return corresponding math object type [!!!SCALABLE!!!]
     template<typename T> constexpr MathObjType get_type() {
         if constexpr (std::is_same_v<T, RealVector>) return MathObjType::RealVector;
         else if constexpr (std::is_same_v<T, ComplexVector>) return MathObjType::ComplexVector;
@@ -74,12 +74,15 @@ private:
         size_t last_key_idx = key_str_pool.size() - 1;
         // Swap iff selected_index != last_index
         if (selected_obj_idx != last_obj_idx) {
-            // Swap selected with last, note pool[index] is ObjEntry which is movable
+            // Swap selected with last, note pool[idx] is ObjEntry which is movable
             obj_pool[selected_obj_idx] = std::move(obj_pool[last_obj_idx]);
             // Swap selected with last
             key_str_pool[selected_key_idx] = std::move(key_str_pool[last_key_idx]);
-            // Effectively update MathObjMap index with moved ObjEntry's hash_key
+            // Effectively update MathObjMap obj_idx with moved ObjEntry's hash_key
             sandbox_registry[obj_pool[selected_obj_idx].hash_key].obj_index = selected_obj_idx;
+            // Effectively update MathObjMap key_idx with moved string's hash_key
+            uint64_t moved_string_hash = get_hash_key(key_str_pool[selected_key_idx]);
+            sandbox_registry[moved_string_hash].key_index = selected_key_idx;
         }
         obj_pool.pop_back();
         key_str_pool.pop_back();
@@ -205,10 +208,10 @@ public:
         return {true, "Moved " + key, moved_obj};
     }
 
-    // Remove an object from sandbox_registry and handle delete
+    // Remove an object from sandbox_registry and handle delete [!!!SCALABLE!!!]
     StatusPayload remove(std::string key);
 
-    // Dictionary key rename without copying heavy vector data
+    // Dictionary key rename without copying heavy vector data [!!!SCALABLE!!!]
     StatusPayload rename(std::string old_key, std::string new_key);
 
     // STORE sandbox data written back to filename
