@@ -14,13 +14,13 @@
 namespace fs = std::filesystem;
 
 // Constructor Implementation
-SandboxManager::SandboxManager(const fs::path& data_dir, const std::string_view filename) :
+SandboxDataManager::SandboxDataManager(const fs::path& data_dir, const std::string_view filename) :
 saved_data_dir(data_dir), active_filename(filename) {
     load_whole_sandbox();
 }
 
 // Public
-StatusPayload SandboxManager::remove(std::string key) {
+StatusPayload SandboxDataManager::remove(std::string key) {
     // Unique lock guarantees exclusive access to modify sandbox data
     std::unique_lock<std::shared_mutex> write_lock(sandbox_lock);
     
@@ -55,7 +55,7 @@ StatusPayload SandboxManager::remove(std::string key) {
 }
 
 // Public
-StatusPayload SandboxManager::rename(std::string old_key, std::string new_key) {
+StatusPayload SandboxDataManager::rename(std::string old_key, std::string new_key) {
     // Return if there is no change in key
     if (old_key == new_key) {return {false, "Why rename the same key?"};}
 
@@ -81,7 +81,7 @@ StatusPayload SandboxManager::rename(std::string old_key, std::string new_key) {
 }
 
 // Public
-StatusPayload SandboxManager:: switch_whole_sandbox(std::string new_target) {
+StatusPayload SandboxDataManager:: switch_whole_sandbox(std::string new_target) {
     // Unique lock guarantees exclusive access to modify sandbox data
     std::unique_lock<std::shared_mutex> write_lock(sandbox_lock);
     // Store current data to disk

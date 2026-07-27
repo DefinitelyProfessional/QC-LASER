@@ -44,8 +44,8 @@ int main() {
     // ========================================================================================================
 
 
-    // Load the Default SandboxManager being "MAIN_sandbox.h5" ===============================================
-    SandboxManager active_sandbox(SAVED_DATA_DIR, "MAIN_sandbox.h5");
+    // Load the Default SandboxDataManager being "MAIN_sandbox.h5" ===============================================
+    SandboxDataManager active_sandbox(SAVED_DATA_DIR, "MAIN_sandbox.h5");
     // WindowManager to handle unified rendering of all windows ===============================================
     STAGE::WindowManager win_manager;
     // Register windows and get their pointers for event listeners ============================================

@@ -27,7 +27,7 @@ struct MathObjMap {
 template<class> inline constexpr bool always_false_v = false;
 
 // Manage Loading & Storing the Sandbox registry
-class SandboxManager {
+class SandboxDataManager {
 private:
     // File variables
     std::filesystem::path saved_data_dir;
@@ -98,8 +98,8 @@ private:
     StatusPayload save_whole_sandbox_internal() const;
 
 public:
-    // SandboxManager Constructor
-    explicit SandboxManager(const std::filesystem::path& data_dir, const std::string_view filename);
+    // SandboxDataManager Constructor
+    explicit SandboxDataManager(const std::filesystem::path& data_dir, const std::string_view filename);
 
     // return the active sandbox filename string
     const std::string get_active_filename() const {

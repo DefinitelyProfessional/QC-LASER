@@ -16,13 +16,13 @@
 namespace fs = std::filesystem;
 
 // Private
-StatusPayload SandboxManager::load_whole_sandbox() {
+StatusPayload SandboxDataManager::load_whole_sandbox() {
     // Unique lock guarantees exclusive access to modify sandbox data
     std::unique_lock<std::shared_mutex> write_lock(sandbox_lock);
     return load_whole_sandbox_internal();
 }
 // Private
-StatusPayload SandboxManager::load_whole_sandbox_internal() {
+StatusPayload SandboxDataManager::load_whole_sandbox_internal() {
     fs::path s_filepath = saved_data_dir / active_filename;
     if (!fs::exists(s_filepath)) {
         std::cout << "[SANDBOX] Creating new sandbox session targeting : " << active_filename << "\n";
