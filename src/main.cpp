@@ -1,4 +1,5 @@
 #include "data-utilities/data-utilities.hpp"
+#include "data-utilities/data-payload.hpp"
 #include "ui-utilities/stage-utilities.hpp"
 #include "ui-utilities/ui-windows.hpp"
 #include "thread-core/thread-pool.hpp"
@@ -30,8 +31,8 @@ std::unique_ptr<ResultPool> G_resultpool;
 
 int main() {
     // Initialize ThreadPool, ResultPool, and directory locations =========================================================
-    G_threadpool = std::make_unique<ThreadPool>(3);
-    G_resultpool = std::make_unique<ResultPool>();
+    G_threadpool = std::make_unique<ThreadPool>(3); // CONCURRENCY CAUTION
+    G_resultpool = std::make_unique<ResultPool>(); // Will be executed at main thread
     fs::path ROOT_DIR, SAVED_DATA_DIR, ASSETS_DIR;
     STAGE::InitializeDirectories(ROOT_DIR, SAVED_DATA_DIR, ASSETS_DIR);
 
@@ -48,26 +49,32 @@ int main() {
     // WindowManager to handle unified rendering of all windows ===============================================
     STAGE::WindowManager win_manager;
     // Register windows and get their pointers for event listeners ============================================
-    SandboxManagerWindow* sandbox_win = 
-        win_manager.RegisterWindow<SandboxManagerWindow>(SAVED_DATA_DIR, active_sandbox.get_active_filename());
+    SandboxManagerWindow* sandbox_win = win_manager.RegisterWindow<SandboxManagerWindow>(
+        SAVED_DATA_DIR, active_sandbox.get_active_filename());
     auto  switch_whole_sandbox = [&active_sandbox, sandbox_win](std::string filename) {
-        sandbox_win->error_buffer = "Loading " + filename + " ...";
-        G_threadpool->assign_task([&active_sandbox, sandbox_win, target_fn = std::move(filename)]() {
-            std::string err_buffer;
-            
-            active_sandbox.switch_whole_sandbox(target_fn, err_buffer);
-            
-            G_resultpool->enqueue([sandbox_win, result_err = std::move(err_buffer)]() {
-                if (!result_err.empty()) {sandbox_win->error_buffer = result_err;}
-                else {sandbox_win->error_buffer = "Successfully loaded.";}
+        sandbox_win->set_error_buffer(true, "Loading " + filename + " ...");
+
+        G_threadpool->assign_task([&active_sandbox, sandbox_win, target = std::move(filename)]() {
+            StatusPayload status = active_sandbox.switch_whole_sandbox(target);
+
+            G_resultpool->enqueue([&active_sandbox, sandbox_win, result = std::move(status)]() {
+                sandbox_win->set_error_buffer(result.success, result.msg);
+                if (result.success) {sandbox_win->set_active_filename(active_sandbox.get_active_filename());}
             });
         });
     };
     sandbox_win->EVENT_OnSelectSandbox =  switch_whole_sandbox;
     sandbox_win->EVENT_OnCreateSandbox =  switch_whole_sandbox;
     sandbox_win->EVENT_OnSaveCurrentSandbox = [&active_sandbox, sandbox_win]() {
-        // TODO later
-        active_sandbox.save_whole_sandbox(sandbox_win->error_buffer);
+        sandbox_win->set_error_buffer(true, "Saving active sandbox ...");
+
+        G_threadpool->assign_task([&active_sandbox, sandbox_win]{
+            StatusPayload status = active_sandbox.save_whole_sandbox();
+
+            G_resultpool->enqueue([sandbox_win, result = std::move(status)]{
+                sandbox_win->set_error_buffer(result.success, result.msg);
+            });
+        });
     };
 
 
@@ -82,6 +89,7 @@ int main() {
         // Unified rendering of all window elements
         // -----------------------------------------------------------
         win_manager.RenderAll();
+        G_resultpool->execute_results();
         // -----------------------------------------------------------
         // Finalize geometry and push to the GPU
         // -----------------------------------------------------------
@@ -95,9 +103,7 @@ int main() {
 
 
     // DEALLOCATE EVERYTHING AND EXIT =========================================================================
-    std::string err_buffer = "";
-    active_sandbox.save_whole_sandbox(err_buffer); // Save current data before exit
-    if (!err_buffer.empty()) {std::cout << err_buffer << std::endl;}
+    active_sandbox.save_whole_sandbox(); // Save current data before exit
     STAGE::ShutdownApplication(host_window);
     G_threadpool.reset(); // Destroy all threads
     G_resultpool.reset(); // Destroy all results

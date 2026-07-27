@@ -1,10 +1,10 @@
 #include "data-utilities/data-utilities.hpp"
+#include "data-utilities/data-payload.hpp"
 #include "math-core/math-objects.hpp"
 
 #include <boost/unordered/unordered_flat_map.hpp> // IWYU pragma: export
 
 #include <shared_mutex>
-#include <stdexcept>
 #include <string_view>
 #include <filesystem>
 #include <cstdint>
@@ -15,14 +15,12 @@ namespace fs = std::filesystem;
 
 // Constructor Implementation
 SandboxManager::SandboxManager(const fs::path& data_dir, const std::string_view filename) :
-    saved_data_dir(data_dir), active_filename(filename) {
-        std::string err_buffer = "";
-        load_whole_sandbox(err_buffer);
-        if (!err_buffer.empty()) {throw std::runtime_error(err_buffer);}
-    }
+saved_data_dir(data_dir), active_filename(filename) {
+    load_whole_sandbox();
+}
 
 // Public
-bool SandboxManager::remove(std::string key, std::string& err_buffer) {
+StatusPayload SandboxManager::remove(std::string key) {
     // Unique lock guarantees exclusive access to modify sandbox data
     std::unique_lock<std::shared_mutex> write_lock(sandbox_lock);
     
@@ -31,8 +29,7 @@ bool SandboxManager::remove(std::string key, std::string& err_buffer) {
     auto it = sandbox_registry.find(hash);
     // Specified key has no match aka doesn't exist
     if (it == sandbox_registry.end()) {
-        err_buffer = std::string(key) + " doesn't exist.";
-        return false;
+        return {false, key + " doesn't exist."};
     }
 
     MathObjMap selected_map = it->second;
@@ -54,13 +51,13 @@ bool SandboxManager::remove(std::string key, std::string& err_buffer) {
 
     // Finally remove the map registry
     sandbox_registry.erase(it);
-    return true;
+    return {true, "Removed " + key};
 }
 
 // Public
-bool SandboxManager::rename(std::string old_key, std::string new_key, std::string& err_buffer) {
+StatusPayload SandboxManager::rename(std::string old_key, std::string new_key) {
     // Return if there is no change in key
-    if (old_key == new_key) {return false;}
+    if (old_key == new_key) {return {false, "Why rename the same key?"};}
 
     // Unique lock guarantees exclusive access to modify sandbox data
     std::unique_lock<std::shared_mutex> write_lock(sandbox_lock);
@@ -68,34 +65,32 @@ bool SandboxManager::rename(std::string old_key, std::string new_key, std::strin
     // Check if old_key already exists 
     auto old_it = sandbox_registry.find(get_hash_key(old_key));
     if (old_it == sandbox_registry.end()) {
-        err_buffer = std::string(old_key) + " doesn't exist.";
-        return false;
+        return {false, old_key + " doesn't exist."};
     }
     // Check if new_key already exists
     uint64_t new_hash = get_hash_key(new_key);
     if (sandbox_registry.find(new_hash) != sandbox_registry.end()) {
-        err_buffer = std::string(new_key) + " already exists (or hash collision).";
-        return false;
+        return {false, new_key + " already exists (or hash collision)."};
     }
     // update key_str and registry hash
     MathObjMap old_map_data = old_it->second;
     key_str_pool[old_map_data.key_index] = std::string(new_key);
     sandbox_registry.erase(old_it);
     sandbox_registry.emplace(new_hash, old_map_data);
-    return true;
+    return {true, old_key + " renamed to " + new_key};
 }
 
 // Public
-void SandboxManager:: switch_whole_sandbox(std::string new_target, std::string& err_buffer) {
+StatusPayload SandboxManager:: switch_whole_sandbox(std::string new_target) {
     // Unique lock guarantees exclusive access to modify sandbox data
     std::unique_lock<std::shared_mutex> write_lock(sandbox_lock);
     // Store current data to disk
-    save_whole_sandbox_internal(err_buffer);
-    if (!err_buffer.empty()) {return;} // err check
+    StatusPayload status = save_whole_sandbox_internal();
+    if (!status.success) {return status;} // err check
 
     // Re-target the path and read the new database
     active_filename = new_target;
 
     // Attempt loading
-    load_whole_sandbox_internal(err_buffer);
+    return load_whole_sandbox_internal();
 }

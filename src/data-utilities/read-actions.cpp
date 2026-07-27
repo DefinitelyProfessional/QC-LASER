@@ -1,4 +1,5 @@
 #include "data-utilities/data-utilities.hpp"
+#include "data-utilities/data-payload.hpp"
 #include "math-core/math-objects.hpp"
 
 #include <boost/unordered/unordered_flat_map.hpp> // IWYU pragma: export
@@ -15,19 +16,19 @@
 namespace fs = std::filesystem;
 
 // Private
-void SandboxManager::load_whole_sandbox(std::string& err_buffer) {
+StatusPayload SandboxManager::load_whole_sandbox() {
     // Unique lock guarantees exclusive access to modify sandbox data
     std::unique_lock<std::shared_mutex> write_lock(sandbox_lock);
-    load_whole_sandbox_internal(err_buffer);
+    return load_whole_sandbox_internal();
 }
 // Private
-void SandboxManager::load_whole_sandbox_internal(std::string& err_buffer) {
+StatusPayload SandboxManager::load_whole_sandbox_internal() {
     fs::path s_filepath = saved_data_dir / active_filename;
     if (!fs::exists(s_filepath)) {
-        std::cout << "[SANDBOX] Creating new sandbox session targeting: " << s_filepath.filename() << "\n";
-        return; // There is nothing to load, exit.
+        std::cout << "[SANDBOX] Creating new sandbox session targeting : " << active_filename << "\n";
+        return {true, "New Sandbox : " + active_filename}; // There is nothing to load, exit.
     }
-    else {std::cout << "[SANDBOX] Loading existing sandbox session from: " << s_filepath.filename() << "\n";}
+    else {std::cout << "[SANDBOX] Loading existing sandbox session from : " << active_filename << "\n";}
 
     // Aggresive memory clearing to make room for loading new data
     sandbox_registry = boost::unordered_flat_map<uint64_t, MathObjMap>();
@@ -38,7 +39,7 @@ void SandboxManager::load_whole_sandbox_internal(std::string& err_buffer) {
     complex_matrix_pool = std::vector<ObjEntry<ComplexMatrix>>();
 
     // TODO
-    err_buffer = "";
 
-    std::cout << "[SANDBOX] Successfully loaded sandbox from: " << s_filepath.filename() << "\n";
+    std::cout << "[SANDBOX] Successfully loaded sandbox from : " << active_filename << "\n";
+    return {true, "Successfully loaded " + active_filename};
 }

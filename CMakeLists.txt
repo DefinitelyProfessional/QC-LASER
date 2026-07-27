@@ -53,6 +53,7 @@ set(APP_SOURCES
     src/main.cpp
     src/app.rc
     src/data-utilities/data-utilities.hpp
+    src/data-utilities/data-payload.hpp
     src/data-utilities/data-utilities.cpp
     src/data-utilities/write-actions.cpp
     src/data-utilities/read-actions.cpp

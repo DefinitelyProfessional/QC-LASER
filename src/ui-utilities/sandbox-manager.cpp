@@ -28,7 +28,7 @@ bool SandboxManagerWindow::is_valid_new_filename(std::string& filename) {
     if (first_dot != std::string::npos) {
         // If a dot exists, everything from that point to the end MUST be exactly ".h5"
         if (filename.compare(first_dot, std::string::npos, ".h5") != 0) {
-            error_buffer = "Dot '.' in filenames must only be '.h5' extension.";
+            set_error_buffer(false, "Dot '.' in filenames must only be '.h5' extension.");
             return false;
         }
     // Mutation ONLY occurs here if no dot exists at all
@@ -36,7 +36,7 @@ bool SandboxManagerWindow::is_valid_new_filename(std::string& filename) {
 
     // Reject names missing a base filename (e.g., just ".h5")
     if (filename.length() <= 3) {
-        error_buffer = "That's straight up an invalid filename.";
+        set_error_buffer(false, "That's straight up an invalid filename.");
         return false;
     }
 
@@ -50,11 +50,11 @@ bool SandboxManagerWindow::is_valid_new_filename(std::string& filename) {
             (c == '_' || c == '.')
         );
         if (!is_valid_char) {
-            error_buffer = "Filename must only be Alphanumeric or '_' or '.'";
+            set_error_buffer(false, "Filename must only be Alphanumeric or '_' or '.'");
             return false;
         }
     }
-    error_buffer = "";
+    set_error_buffer(true, "");
     return true;
 }
 
@@ -95,6 +95,11 @@ void SandboxManagerWindow::execute_delete_to_trash() {
 }
 
 // Public
+void SandboxManagerWindow::set_error_buffer(bool status, std::string msg) {
+    success = status; error_buffer = msg;
+}
+
+// Public
 void SandboxManagerWindow::refresh_filenames() {
     db_filenames = std::vector<std::string>(); // Clean vector
     if (!fs::exists(saved_data_dir) || !fs::is_directory(saved_data_dir)) {
@@ -112,6 +117,7 @@ void SandboxManagerWindow::refresh_filenames() {
     // reset delete sellect system
     selected_delete.assign(db_filenames_size, false);
     selected_delete_count = 0;
+    set_error_buffer(true, "");
 }
 
 // Public
@@ -135,13 +141,14 @@ void SandboxManagerWindow::Render() {
 
     ImGui::Text("Create New Sandbox :");
     if (!error_buffer.empty()) {
-        ImGui::TextColored(ImVec4(1.0f,0.0f,0.0f,1.0f), "%s", error_buffer.c_str());
+        ImVec4 error_color = (success) ? ImVec4(0.2f,1.0f,0.1f,1.0f) : ImVec4(1.0f,0.0f,0.0f,1.0f);
+        ImGui::TextColored(error_color, "%s", error_buffer.c_str());
     }
     // Input box for the new file name
     ImGui::InputTextWithHint(
-        "###CreateNewInputText", 
-        "ex : new_sandbox.h5", 
-        new_sandbox_input, 
+        "###CreateNewInputText",
+        "ex : new_sandbox.h5",
+        new_sandbox_input,
         sizeof(new_sandbox_input),
         ImGuiInputTextFlags_CharsNoBlank
     );
@@ -170,6 +177,10 @@ void SandboxManagerWindow::Render() {
 
     ImGuiTableFlags table_flags = ImGuiTableFlags_RowBg | ImGuiTableFlags_Borders | ImGuiTableFlags_ScrollY;
     ImVec2 table_size = ImVec2(0.0f, -ImGui::GetFrameHeightWithSpacing() * 1.1f);
+
+    // TEMPORARY FPS READ
+    ImGuiIO& io = ImGui::GetIO();
+    ImGui::Text("FPS : %.1f", io.Framerate);
 
     // Changed from 1 column to 2 columns
     if (ImGui::BeginTable("###SandboxFilesTable", 2, table_flags, table_size)) {
