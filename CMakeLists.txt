@@ -60,8 +60,8 @@ set(APP_SOURCES
     src/math-core/math-functions.cpp
     src/math-core/math-objects.hpp
     src/math-core/math-objects.cpp
-    src/thread-core/result-queue.hpp
-    src/thread-core/result-queue.cpp
+    src/thread-core/result-pool.hpp
+    src/thread-core/result-pool.cpp
     src/thread-core/thread-pool.hpp
     src/thread-core/thread-pool.cpp
     src/ui-utilities/general-ui-utilities.hpp

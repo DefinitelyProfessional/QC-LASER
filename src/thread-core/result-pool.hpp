@@ -1,0 +1,20 @@
+#pragma once
+
+#include <functional>
+#include <vector>
+#include <mutex>
+
+class ResultPool {
+private:
+    // 2 separate results array buffers
+    std::vector<std::function<void()>> results[2];
+    // Backbone tools for a ResultPool
+    std::mutex result_pool_lock;
+    int write_idx = 0;
+public:
+    // Enqueue a new result task
+    void enqueue(std::function<void()> result_task);
+
+    // Execute all results and swap results with an empty one
+    void execute_results();
+};

@@ -2,6 +2,7 @@
 #include "ui-utilities/stage-utilities.hpp"
 #include "ui-utilities/ui-windows.hpp"
 #include "thread-core/thread-pool.hpp"
+#include "thread-core/result-pool.hpp"
 
 #include <GLFW/glfw3.h>
 #include "imgui.h"
@@ -24,11 +25,13 @@ namespace fs = std::filesystem;
 constexpr std::chrono::duration<double, std::milli> targetFrameTime(1000.0 / 60.0);
 
 // Global pointer to Thread Pool
-std::unique_ptr<ThreadPool> GLOBAL_TP;
+std::unique_ptr<ThreadPool> G_threadpool;
+std::unique_ptr<ResultPool> G_resultpool;
 
 int main() {
-    // Initialize Thread Pool and directory locations =========================================================
-    GLOBAL_TP = std::make_unique<ThreadPool>(3);
+    // Initialize ThreadPool, ResultPool, and directory locations =========================================================
+    G_threadpool = std::make_unique<ThreadPool>(3);
+    G_resultpool = std::make_unique<ResultPool>();
     fs::path ROOT_DIR, SAVED_DATA_DIR, ASSETS_DIR;
     STAGE::InitializeDirectories(ROOT_DIR, SAVED_DATA_DIR, ASSETS_DIR);
 
@@ -48,15 +51,22 @@ int main() {
     SandboxManagerWindow* sandbox_win = 
         win_manager.RegisterWindow<SandboxManagerWindow>(SAVED_DATA_DIR, active_sandbox.get_active_filename());
     auto  switch_whole_sandbox = [&active_sandbox, sandbox_win](std::string filename) {
-        std::string err_buffer;
-        GLOBAL_TP->assign_task([&active_sandbox, &filename, &err_buffer](){
-            active_sandbox. switch_whole_sandbox(std::move(filename), err_buffer);
+        sandbox_win->error_buffer = "Loading " + filename + " ...";
+        G_threadpool->assign_task([&active_sandbox, sandbox_win, target_fn = std::move(filename)]() {
+            std::string err_buffer;
+            
+            active_sandbox.switch_whole_sandbox(target_fn, err_buffer);
+            
+            G_resultpool->enqueue([sandbox_win, result_err = std::move(err_buffer)]() {
+                if (!result_err.empty()) {sandbox_win->error_buffer = result_err;}
+                else {sandbox_win->error_buffer = "Successfully loaded.";}
+            });
         });
-        if (!err_buffer.empty()) {sandbox_win->error_buffer = err_buffer;}
     };
     sandbox_win->EVENT_OnSelectSandbox =  switch_whole_sandbox;
     sandbox_win->EVENT_OnCreateSandbox =  switch_whole_sandbox;
     sandbox_win->EVENT_OnSaveCurrentSandbox = [&active_sandbox, sandbox_win]() {
+        // TODO later
         active_sandbox.save_whole_sandbox(sandbox_win->error_buffer);
     };
 
@@ -89,7 +99,8 @@ int main() {
     active_sandbox.save_whole_sandbox(err_buffer); // Save current data before exit
     if (!err_buffer.empty()) {std::cout << err_buffer << std::endl;}
     STAGE::ShutdownApplication(host_window);
-    GLOBAL_TP.reset(); // Destroy all threads
+    G_threadpool.reset(); // Destroy all threads
+    G_resultpool.reset(); // Destroy all results
     // ========================================================================================================
     std::cout << "End of Program : Thank you and see you later." << std::endl;
     return 0;
