@@ -17,15 +17,10 @@
 #include <string>
 #include <mutex>
 
-struct MathObjMap {
-    MathObjType type;
-    uint32_t obj_index;
-    uint32_t key_index;
-};
-
 // Helper for static_assert in template branches
-template<class> inline constexpr bool always_false_v = false;
+template<class> static inline constexpr bool always_false_v = false;
 
+namespace DATA {
 // Manage Loading & Storing the Sandbox registry
 class SandboxDataManager {
 private:
@@ -36,6 +31,12 @@ private:
     // Tools for multithreading
     mutable std::shared_mutex sandbox_lock; // Read/Write Lock
 
+    // Registry handle
+    struct MathObjMap {
+        MathObjType type;
+        uint32_t obj_index;
+        uint32_t key_index;
+    };
     // Encapsulate obj_data and hash_key to sync with registry
     template<typename T> struct ObjEntry {
         uint64_t hash_key;
@@ -220,3 +221,4 @@ public:
     // Save then delete previous sandbox, switch and load new sandbox
     StatusPayload switch_whole_sandbox(const std::string_view new_target);
 };
+}

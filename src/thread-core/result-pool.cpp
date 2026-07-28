@@ -5,6 +5,7 @@
 #include <vector>
 #include <mutex>
 
+namespace MULTI {
 void OutputPool::enqueue(std::function<void()> result_task) {
     std::lock_guard<std::mutex> lock(result_pool_lock);
     results[write_idx].push_back(std::move(result_task));
@@ -22,4 +23,5 @@ void OutputPool::execute_results() {
     }
     // Clear the array that was read
     results[read_idx].clear();
+}
 }

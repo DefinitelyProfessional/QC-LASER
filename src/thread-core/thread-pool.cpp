@@ -5,6 +5,7 @@
 #include <utility>
 #include <mutex>
 
+namespace MULTI {
 // Constructor Implementation
 ThreadPool::ThreadPool(int thread_count) {
     for (int i = 0; i < thread_count; i++) {
@@ -76,4 +77,5 @@ void ThreadPool::assign_task(std::function<void()> new_task) {
     }
     // Wake up a sleeping thread available for a task
     broadcaster.notify_one();
+}
 }

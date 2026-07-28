@@ -8,6 +8,8 @@
 #include <mutex>
 #include <queue>
 
+namespace MULTI {
+// Threadpool architecture for C++ execution concurrency
 class ThreadPool {
 private:
     // The Threads
@@ -30,3 +32,4 @@ public:
     // Assign new tasks for the worker threads
     void assign_task(std::function<void()> new_task); 
 };
+}

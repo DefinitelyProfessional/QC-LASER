@@ -13,6 +13,7 @@
 
 namespace fs = std::filesystem;
 
+namespace DATA {
 // Constructor Implementation
 SandboxDataManager::SandboxDataManager(const fs::path& data_dir, const std::string_view filename) :
 saved_data_dir(data_dir), active_filename(filename) {
@@ -108,4 +109,5 @@ StatusPayload SandboxDataManager:: switch_whole_sandbox(std::string_view new_tar
 
     // Attempt loading
     return load_whole_sandbox_internal();
+}
 }

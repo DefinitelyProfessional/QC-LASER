@@ -14,7 +14,7 @@
 #include <mutex>
 
 namespace fs = std::filesystem;
-
+namespace DATA {
 // Private
 StatusPayload SandboxDataManager::load_whole_sandbox() {
     // Unique lock guarantees exclusive access to modify sandbox data
@@ -42,4 +42,5 @@ StatusPayload SandboxDataManager::load_whole_sandbox_internal() {
 
     std::cout << "[SANDBOX] Successfully loaded sandbox from : " << active_filename << "\n";
     return {true, "Successfully loaded " + active_filename};
+}
 }

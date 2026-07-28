@@ -14,7 +14,7 @@
 #include <cfloat>
 
 namespace fs = std::filesystem;
-
+namespace UI {
 // Constructor implementation
 SandboxManagerWindow::SandboxManagerWindow(const fs::path& data_dir, std::string active_file) : 
     UIWindow("Sandbox Manager"), saved_data_dir(data_dir), active_filename(active_file) {
@@ -93,21 +93,6 @@ void SandboxManagerWindow::execute_delete_to_trash() {
     // Refresh the list after deletion
     refresh_filenames();
 }
-
-// // Public
-// void SandboxManagerWindow::set_active_filename(std::string new_active) {
-//     active_filename = new_active;
-// }
-
-// // Public
-// void SandboxManagerWindow::set_error_buffer(bool status, std::string msg) {
-//     success = status; error_buffer = msg;
-// }
-
-// // Public
-// void SandboxManagerWindow::reset_busy_status() {
-//     is_busy = false;
-// }
 
 // Public
 void SandboxManagerWindow::refresh_filenames() {
@@ -282,4 +267,5 @@ void SandboxManagerWindow::Render() {
     }
 
     ImGui::End();
+}
 }

@@ -20,13 +20,13 @@
 namespace fs = std::filesystem;
 
 // Global pointer to Thread Pool
-std::unique_ptr<ThreadPool> G_threadpool;
-std::unique_ptr<OutputPool> G_outputpool;
+std::unique_ptr<MULTI::ThreadPool> G_threadpool;
+std::unique_ptr<MULTI::OutputPool> G_outputpool;
 
 int main() {
     // Initialize ThreadPool, OutputPool, and directory locations =========================================================
-    G_threadpool = std::make_unique<ThreadPool>(3); // CONCURRENCY CAUTION
-    G_outputpool = std::make_unique<OutputPool>(); // Will be executed at main thread
+    G_threadpool = std::make_unique<MULTI::ThreadPool>(3); // CONCURRENCY CAUTION
+    G_outputpool = std::make_unique<MULTI::OutputPool>(); // Will be executed at main thread
     fs::path ROOT_DIR, SAVED_DATA_DIR, ASSETS_DIR;
     STAGE::InitializeDirectories(ROOT_DIR, SAVED_DATA_DIR, ASSETS_DIR);
 
@@ -40,11 +40,11 @@ int main() {
 
 
     // Load the Default SandboxDataManager being "MAIN_sandbox.h5" ===============================================
-    SandboxDataManager active_sandbox(SAVED_DATA_DIR, "MAIN_sandbox.h5");
+    DATA::SandboxDataManager active_sandbox(SAVED_DATA_DIR, "MAIN_sandbox.h5");
     // WindowManager to handle unified rendering of all windows ===============================================
     STAGE::WindowManager win_manager;
     // Register windows and get their pointers for event listeners ============================================
-    SandboxManagerWindow* sandbox_win = win_manager.RegisterWindow<SandboxManagerWindow>(
+    UI::SandboxManagerWindow* sandbox_win = win_manager.RegisterWindow<UI::SandboxManagerWindow>(
         SAVED_DATA_DIR, active_sandbox.get_active_filename());
 
     auto  switch_whole_sandbox = [&active_sandbox, sandbox_win](std::string filename) {

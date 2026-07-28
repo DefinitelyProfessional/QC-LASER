@@ -8,6 +8,7 @@
 #include <vector>
 #include <string>
 
+namespace UI {
 // Manage Sandbox files, Create, Select, Delete
 class SandboxManagerWindow : public UIWindow {
 private:
@@ -54,3 +55,4 @@ public:
     // Render function definition
     void Render() override;
 };
+}

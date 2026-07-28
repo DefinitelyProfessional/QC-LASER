@@ -4,6 +4,8 @@
 #include <vector>
 #include <mutex>
 
+namespace MULTI {
+// Thread output capture for main thread
 class OutputPool {
 private:
     // 2 separate results array buffers
@@ -18,3 +20,4 @@ public:
     // Execute all results and swap results with an empty one
     void execute_results();
 };
+}

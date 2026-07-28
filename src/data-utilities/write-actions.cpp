@@ -10,6 +10,7 @@
 
 namespace fs = std::filesystem;
 
+namespace DATA {
 //Public
 StatusPayload SandboxDataManager::save_whole_sandbox() const {
     // Unique lock guarantees exclusive access to modify sandbox data
@@ -28,4 +29,5 @@ StatusPayload SandboxDataManager::save_whole_sandbox_internal() const {
 
     std::cout << "[SANDBOX] Successfully saved sandbox to: " << active_filename << "\n";
     return {true, "Successfully saved " + active_filename};
+}
 }
