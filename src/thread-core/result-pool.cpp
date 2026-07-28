@@ -5,12 +5,12 @@
 #include <vector>
 #include <mutex>
 
-void ResultPool::enqueue(std::function<void()> result_task) {
+void OutputPool::enqueue(std::function<void()> result_task) {
     std::lock_guard<std::mutex> lock(result_pool_lock);
     results[write_idx].push_back(std::move(result_task));
 }
 
-void ResultPool::execute_results() {
+void OutputPool::execute_results() {
     int read_idx;
     {// Lock Scoping
         std::lock_guard<std::mutex> lock(result_pool_lock);

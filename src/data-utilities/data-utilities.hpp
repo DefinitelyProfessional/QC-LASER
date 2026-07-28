@@ -69,7 +69,7 @@ private:
         else static_assert(always_false_v<T>, "Unsupported math object type.");
     }
     // Compile-time routing : helper to manage delete objects from their pools
-    template<typename T> inline void swap_pop(std::vector<ObjEntry<T>>& obj_pool, uint32_t selected_obj_idx, uint32_t selected_key_idx) {
+    template<typename T> void swap_pop(std::vector<ObjEntry<T>>& obj_pool, uint32_t selected_obj_idx, uint32_t selected_key_idx) {
         size_t last_obj_idx = obj_pool.size() - 1;
         size_t last_key_idx = key_str_pool.size() - 1;
         // Swap iff selected_index != last_index
@@ -125,7 +125,7 @@ public:
 
 
     // Add an object to sandbox_registry and handle data
-    template<typename T> StatusPayload add(std::string key, T obj) {
+    template<typename T> StatusPayload add(std::string_view key, T obj) {
         uint64_t hash = get_hash_key(key);
 
         // Unique lock guarantees exclusive access to modify sandbox data
@@ -133,7 +133,7 @@ public:
 
         // Reject adding objects with the same key_str
         if (sandbox_registry.find(hash) != sandbox_registry.end()) {
-            return {false, key + " already exists."};
+            return {false, std::string(key) + " already exists."};
         }
 
         // Get corresponding pool and type
@@ -147,15 +147,15 @@ public:
         // Store obj at corresponding obj_pool
         obj_pool.push_back({hash, std::move(obj)});
         // Store key at corresponding key_pool
-        key_str_pool.push_back(key);
+        key_str_pool.push_back(std::string(key));
 
         // Register to sandbox_registry
         sandbox_registry[hash] = {type, obj_index, key_index};
-        return {true, "Added " + key};
+        return {true, "Added " + std::string(key)};
     }
 
     // Get a hard copy of the object, registry keeps its original object untouched
-    template<typename T> DataPayload<T> get_copy(std::string key) {
+    template<typename T> DataPayload<T> get_copy(std::string_view key) {
         uint64_t hash = get_hash_key(key);
 
         // Shared_lock enables other threads to read data but not write
@@ -165,19 +165,19 @@ public:
         auto it = sandbox_registry.find(hash);
         // If specified type doesn't match the object's type
         if (it->second.type != get_type<T>()) {
-            return {false, key + " object type mismatch.", std::nullopt};
+            return {false, std::string(key) + " object type mismatch.", std::nullopt};
         }
         // If specified key and its object doesn't exist
         if (it == sandbox_registry.end()) {
-            return {false, key + " already exists.", std::nullopt};
+            return {false, std::string(key) + " already exists.", std::nullopt};
         }
 
         // Return hard copy, registry keeps the original
-        return {true, "Copied " + key, get_pool<T>()[it->second.obj_index].obj_data};
+        return {true, "Copied " + std::string(key), get_pool<T>()[it->second.obj_index].obj_data};
     }
 
     // Move the object out of the registry without copy, registry no longer has the object
-    template<typename T> DataPayload<T> get_move(std::string key) {
+    template<typename T> DataPayload<T> get_move(std::string_view key) {
         uint64_t hash = get_hash_key(key);
 
         // Unique lock guarantees exclusive access to modify sandbox data
@@ -189,11 +189,11 @@ public:
 
         // If specified type doesn't match the object's type
         if (selected_map.type != get_type<T>()) {
-            return {false, key + " object type mismatch.", std::nullopt};
+            return {false, std::string(key) + " object type mismatch.", std::nullopt};
         }
         // If specified key and its object doesn't exist
         if (it == sandbox_registry.end()) {
-            return {false, key + " doesn't exist.", std::nullopt};
+            return {false, std::string(key) + " doesn't exist.", std::nullopt};
         }
         
         auto& obj_pool = get_pool<T>();
@@ -205,18 +205,18 @@ public:
         sandbox_registry.erase(it);
 
         // Return moved object, registry no longer has it
-        return {true, "Moved " + key, moved_obj};
+        return {true, "Moved " + std::string(key), moved_obj};
     }
 
     // Remove an object from sandbox_registry and handle delete [!!!SCALABLE!!!]
-    StatusPayload remove(std::string key);
+    StatusPayload remove(std::string_view key);
 
     // Dictionary key rename without copying heavy vector data [!!!SCALABLE!!!]
-    StatusPayload rename(std::string old_key, std::string new_key);
+    StatusPayload rename(std::string_view old_key, std::string_view new_key);
 
     // STORE sandbox data written back to filename
     StatusPayload save_whole_sandbox() const;
 
     // Save then delete previous sandbox, switch and load new sandbox
-    StatusPayload switch_whole_sandbox(const std::string new_target);
+    StatusPayload switch_whole_sandbox(const std::string_view new_target);
 };

@@ -94,10 +94,20 @@ void SandboxManagerWindow::execute_delete_to_trash() {
     refresh_filenames();
 }
 
-// Public
-void SandboxManagerWindow::set_error_buffer(bool status, std::string msg) {
-    success = status; error_buffer = msg;
-}
+// // Public
+// void SandboxManagerWindow::set_active_filename(std::string new_active) {
+//     active_filename = new_active;
+// }
+
+// // Public
+// void SandboxManagerWindow::set_error_buffer(bool status, std::string msg) {
+//     success = status; error_buffer = msg;
+// }
+
+// // Public
+// void SandboxManagerWindow::reset_busy_status() {
+//     is_busy = false;
+// }
 
 // Public
 void SandboxManagerWindow::refresh_filenames() {
@@ -133,10 +143,15 @@ void SandboxManagerWindow::Render() {
     ImGui::SameLine();
     ImGui::TextColored(ImVec4(1.0f,0.5f,0.0f,1.0f), "%s", active_filename.c_str());
     ImGui::SameLine();
+    ImGui::BeginDisabled(is_busy);
     if (ImGui::Button("Save###CurrentActiveSaveButton")) {
-        if (EVENT_OnSaveCurrentSandbox) {EVENT_OnSaveCurrentSandbox();}
+        if (EVENT_OnSaveCurrentSandbox) {
+            EVENT_OnSaveCurrentSandbox();
+            is_busy = true; // Main will reset this
+        }
         refresh_filenames();
     }
+    ImGui::EndDisabled();
     ImGui::Separator();
 
     ImGui::Text("Create New Sandbox :");
@@ -155,11 +170,14 @@ void SandboxManagerWindow::Render() {
     ImGui::SameLine();
     
     // Only allow creation if the user actually typed something
-    ImGui::BeginDisabled(new_sandbox_input[0] == '\0');
+    ImGui::BeginDisabled(new_sandbox_input[0] == '\0' || is_busy);
     if (ImGui::Button("Create###CreateNewButton")) {
         std::string filename = std::string(new_sandbox_input);
         if (is_valid_new_filename(filename)) {
-            if (EVENT_OnCreateSandbox) {EVENT_OnCreateSandbox(filename);}
+            if (EVENT_OnCreateSandbox) {
+                EVENT_OnCreateSandbox(filename);
+                is_busy = true; // Main will reset this
+            }
         }
         // Clear the input box after submission
         new_sandbox_input[0] = '\0';
@@ -216,11 +234,15 @@ void SandboxManagerWindow::Render() {
                 if (ImGui::Selectable(filename.c_str(), selected_index == i)) {
                     selected_index = i;
                 }
-
+                ImGui::BeginDisabled(is_busy);
                 if ((ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left)) ||
                     (ImGui::IsItemFocused() && ImGui::IsKeyPressed(ImGuiKey_Enter))) {
                     selected_index = i;
-                    if (EVENT_OnSelectSandbox) EVENT_OnSelectSandbox(db_filenames[selected_index]);
+                    if (EVENT_OnSelectSandbox) {
+                        EVENT_OnSelectSandbox(db_filenames[selected_index]);
+                        is_busy = true; // Main will reset this
+                    }
+                ImGui::EndDisabled();
                 }
             }
         }
@@ -229,9 +251,9 @@ void SandboxManagerWindow::Render() {
     ImGui::Separator();
 
     // Enable Delete button only if at least one checkbox is ticked
-    ImGui::BeginDisabled(selected_delete_count == 0);
+    ImGui::BeginDisabled(selected_delete_count == 0 || is_busy);
     if (ImGui::Button("Delete Selected File(s)###DeleteButton")) {
-        ImGui::OpenPopup("Delete Confirmation");
+        ImGui::OpenPopup("Delete Confirmation"); // must match BeginPopupModal
     }
     ImGui::EndDisabled();
 

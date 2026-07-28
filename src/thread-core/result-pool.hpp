@@ -4,11 +4,11 @@
 #include <vector>
 #include <mutex>
 
-class ResultPool {
+class OutputPool {
 private:
     // 2 separate results array buffers
     std::vector<std::function<void()>> results[2];
-    // Backbone tools for a ResultPool
+    // Backbone tools for a OutputPool
     std::mutex result_pool_lock;
     int write_idx = 0;
 public:

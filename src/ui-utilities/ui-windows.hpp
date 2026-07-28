@@ -14,17 +14,16 @@ private:
     // File variables
     const std::filesystem::path& saved_data_dir;
     std::string active_filename;
+    std::string error_buffer = "";
     std::vector<std::string> db_filenames;
-    int db_filenames_size;
-    
-    // UI State Trackers
     std::vector<bool> selected_delete;
     int selected_delete_count = 0; 
     int selected_index = -1;
+    int db_filenames_size;
     char new_sandbox_input[64] = "";
-    std::string error_buffer = "";
     bool success = false;
-
+    bool is_busy = false;
+    
     // Validate new sandbox filename
     bool is_valid_new_filename(std::string& filename);
 
@@ -41,10 +40,13 @@ public:
     SandboxManagerWindow(const std::filesystem::path& data_dir, std::string active_file);
 
     // Set the active filename
-    void set_active_filename(std::string new_active) {active_filename = new_active;}
+    inline void set_active_filename(std::string new_active) {active_filename = new_active;};
 
     // Set error buffer for communication
-    void set_error_buffer(bool success, std::string msg);
+    inline void set_error_buffer(bool status, std::string msg) {success = status; error_buffer = msg;};
+
+    // Reset the busy status to false
+    inline void reset_busy_status() {is_busy = false;};
 
     // Refresh filenames and other states and functionalities
     void refresh_filenames();

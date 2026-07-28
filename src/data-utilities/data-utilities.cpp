@@ -20,7 +20,7 @@ saved_data_dir(data_dir), active_filename(filename) {
 }
 
 // Public [!!!SCALABLE!!!]
-StatusPayload SandboxDataManager::remove(std::string key) {
+StatusPayload SandboxDataManager::remove(std::string_view key) {
     // Unique lock guarantees exclusive access to modify sandbox data
     std::unique_lock<std::shared_mutex> write_lock(sandbox_lock);
     
@@ -29,7 +29,7 @@ StatusPayload SandboxDataManager::remove(std::string key) {
     auto it = sandbox_registry.find(hash);
     // Specified key has no match aka doesn't exist
     if (it == sandbox_registry.end()) {
-        return {false, key + " doesn't exist."};
+        return {false, std::string(key) + " doesn't exist."};
     }
 
     MathObjMap selected_map = it->second;
@@ -51,11 +51,11 @@ StatusPayload SandboxDataManager::remove(std::string key) {
 
     // Finally remove the map registry
     sandbox_registry.erase(it);
-    return {true, "Removed " + key};
+    return {true, "Removed " + std::string(key)};
 }
 
 // Public [!!!SCALABLE!!!]
-StatusPayload SandboxDataManager::rename(std::string old_key, std::string new_key) {
+StatusPayload SandboxDataManager::rename(std::string_view old_key, std::string_view new_key) {
     // Return if there is no change in key
     if (old_key == new_key) {return {false, "Why rename the same key?"};}
 
@@ -65,12 +65,12 @@ StatusPayload SandboxDataManager::rename(std::string old_key, std::string new_ke
     // Check if old_key already exists 
     auto old_it = sandbox_registry.find(get_hash_key(old_key));
     if (old_it == sandbox_registry.end()) {
-        return {false, old_key + " doesn't exist."};
+        return {false, std::string(old_key) + " doesn't exist."};
     }
     // Check if new_key already exists
     uint64_t new_hash = get_hash_key(new_key);
     if (sandbox_registry.find(new_hash) != sandbox_registry.end()) {
-        return {false, new_key + " already exists (or hash collision)."};
+        return {false, std::string(old_key) + " already exists (or hash collision)."};
     }
     // Update key_str and registry hash
     MathObjMap old_map_data = old_it->second;
@@ -92,11 +92,11 @@ StatusPayload SandboxDataManager::rename(std::string old_key, std::string new_ke
     }
     sandbox_registry.erase(old_it);
     sandbox_registry.emplace(new_hash, old_map_data);
-    return {true, old_key + " renamed to " + new_key};
+    return {true, std::string(old_key) + " renamed to " + std::string(new_key)};
 }
 
 // Public
-StatusPayload SandboxDataManager:: switch_whole_sandbox(std::string new_target) {
+StatusPayload SandboxDataManager:: switch_whole_sandbox(std::string_view new_target) {
     // Unique lock guarantees exclusive access to modify sandbox data
     std::unique_lock<std::shared_mutex> write_lock(sandbox_lock);
     // Store current data to disk
