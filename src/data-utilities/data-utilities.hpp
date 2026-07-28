@@ -43,6 +43,7 @@ private:
         std::vector<ObjEntry<RealMatrix>>,
         std::vector<ObjEntry<ComplexMatrix>>
     > ObjPool; ObjPool obj_pool;
+
     boost::unordered_flat_map<uint64_t, MathObjMap> sandbox_registry;
     std::vector<std::string> key_str_pool; // display for user
     
@@ -52,7 +53,7 @@ private:
     // Tools for multithreading
     mutable std::shared_mutex sandbox_lock; // Read/Write Lock
 
-    // To help alongside swap_pop
+    // To help alongside swap_pop [!!!SCALABLE!!!]
     template<typename T> void run_in_pool(MathObjType type, T&& pool_buffer) {
         switch (type) {
             case MathObjType::RealVector:
@@ -67,7 +68,7 @@ private:
     }
 
     // Compile-time routing : return corresponding data pool
-    template<typename T> inline auto& get_pool() {
+    template<typename T> constexpr inline auto& get_pool() {
         return std::get<std::vector<ObjEntry<T>>>(obj_pool);
     }
 
@@ -116,19 +117,19 @@ public:
     // SandboxDataManager Constructor
     explicit SandboxDataManager(const std::filesystem::path& data_dir, const std::string_view filename);
 
-    // return the active sandbox filename string
+    // Return the active sandbox filename string
     const std::string get_active_filename() const {
         // Shared_lock enables other threads to read data but not write
         std::shared_lock<std::shared_mutex> read_lock(sandbox_lock);
         return active_filename;
     }
-    // return the vector string of keys for display to the user
+    // Return the vector string of keys for display to the user
     const std::vector<std::string> get_key_str_pool() const {
         // Shared_lock enables other threads to read data but not write
         std::shared_lock<std::shared_mutex> read_lock(sandbox_lock);
         return key_str_pool;
     }
-    // return the amount of objects present in the registry
+    // Return the amount of objects present in the registry
     size_t count() const {
         // Shared_lock enables other threads to read data but not write
         std::shared_lock<std::shared_mutex> read_lock(sandbox_lock);
@@ -145,7 +146,7 @@ public:
 
         // Reject adding objects with the same key_str
         if (sandbox_registry.find(hash) != sandbox_registry.end()) {
-            return {false, std::string(key) + " already exists."};
+            return {std::string(key) + " already exists.", false};
         }
 
         // Get corresponding pool and type
@@ -163,7 +164,7 @@ public:
 
         // Register to sandbox_registry
         sandbox_registry[hash] = {type, obj_index, key_index};
-        return {true, "Added " + std::string(key)};
+        return {"Added " + std::string(key), true};
     }
 
     // Get a hard copy of the object, registry keeps its original object untouched
@@ -177,15 +178,15 @@ public:
         auto it = sandbox_registry.find(hash);
         // If specified key and its object doesn't exist
         if (it == sandbox_registry.end()) {
-            return {false, std::string(key) + " already exists.", std::nullopt};
+            return {std::nullopt, std::string(key) + " already exists.", false};
         }
         // If specified type doesn't match the object's type
         if (it->second.type != get_type<T>()) {
-            return {false, std::string(key) + " object type mismatch.", std::nullopt};
+            return {std::nullopt, std::string(key) + " object type mismatch.", false};
         }
 
         // Return hard copy, registry keeps the original
-        return {true, "Copied " + std::string(key), get_pool<T>()[it->second.obj_index].obj_data};
+        return {get_pool<T>()[it->second.obj_index].obj_data, "Copied " + std::string(key), true};
     }
 
     // Move the object out of the registry without copy, registry no longer has the object
@@ -199,12 +200,12 @@ public:
         auto it = sandbox_registry.find(hash);
         // If specified key and its object doesn't exist
         if (it == sandbox_registry.end()) {
-            return {false, std::string(key) + " doesn't exist.", std::nullopt};
+            return {std::nullopt, std::string(key) + " doesn't exist.", false};
         }
         MathObjMap selected_map = it->second;
         // If specified type doesn't match the object's type
         if (selected_map.type != get_type<T>()) {
-            return {false, std::string(key) + " object type mismatch.", std::nullopt};
+            return {std::nullopt, std::string(key) + " object type mismatch.", false};
         }
         
         auto& obj_pool = get_pool<T>();
@@ -216,7 +217,7 @@ public:
         sandbox_registry.erase(it);
 
         // Return moved object, registry no longer has it
-        return {true, "Moved " + std::string(key), moved_obj};
+        return {moved_obj, "Moved " + std::string(key), true};
     }
 
     // Remove an object from sandbox_registry and handle delete [!!!SCALABLE!!!]

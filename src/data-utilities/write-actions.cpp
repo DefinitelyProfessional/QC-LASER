@@ -28,6 +28,6 @@ StatusPayload SandboxDataManager::save_whole_sandbox_internal() const {
     // TODO
 
     std::cout << "[SANDBOX] Successfully saved sandbox to: " << active_filename << "\n";
-    return {true, "Successfully saved " + active_filename};
+    return {"Successfully saved " + active_filename, true};
 }
 }

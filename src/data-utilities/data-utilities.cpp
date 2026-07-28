@@ -29,7 +29,7 @@ StatusPayload SandboxDataManager::remove(std::string_view key) {
     auto it = sandbox_registry.find(hash);
     // Specified key has no match aka doesn't exist
     if (it == sandbox_registry.end()) {
-        return {false, std::string(key) + " doesn't exist."};
+        return {std::string(key) + " doesn't exist.", false};
     }
 
     MathObjMap selected_map = it->second;
@@ -44,26 +44,26 @@ StatusPayload SandboxDataManager::remove(std::string_view key) {
 
     // Finally remove the map registry
     sandbox_registry.erase(it);
-    return {true, "Removed " + std::string(key)};
+    return {"Removed " + std::string(key), true};
 }
 
 // Public [!!!SCALABLE!!!]
 StatusPayload SandboxDataManager::rename(std::string_view old_key, std::string_view new_key) {
     // Return if there is no change in key
-    if (old_key == new_key) {return {false, "Why rename the same key?"};}
+    if (old_key == new_key) {return {"Why rename the same key?", false};}
 
     // Unique lock guarantees exclusive access to modify sandbox data
     std::unique_lock<std::shared_mutex> write_lock(sandbox_lock);
 
-    // Check if old_key already exists 
     auto old_it = sandbox_registry.find(get_hash_key(old_key));
+    // Check if old_key already exists 
     if (old_it == sandbox_registry.end()) {
-        return {false, std::string(old_key) + " doesn't exist."};
+        return {std::string(old_key) + " doesn't exist.", false};
     }
     // Check if new_key already exists
     uint64_t new_hash = get_hash_key(new_key);
     if (sandbox_registry.find(new_hash) != sandbox_registry.end()) {
-        return {false, std::string(old_key) + " already exists (or hash collision)."};
+        return {std::string(old_key) + " already exists (or hash collision).", false};
     }
 
     // Update key_str and registry hash
@@ -77,7 +77,7 @@ StatusPayload SandboxDataManager::rename(std::string_view old_key, std::string_v
 
     sandbox_registry.erase(old_it);
     sandbox_registry.emplace(new_hash, old_map_data);
-    return {true, std::string(old_key) + " renamed to " + std::string(new_key)};
+    return {std::string(old_key) + " renamed to " + std::string(new_key), true};
 }
 
 // Public

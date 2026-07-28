@@ -4,12 +4,12 @@
 #include <string>
 
 struct StatusPayload {
-    bool success;
     std::string msg;
+    bool success;
 };
 
 template<typename T> struct DataPayload {
-    bool success;
-    std::string msg;
     std::optional<T> data;
+    std::string msg;
+    bool success;
 };
