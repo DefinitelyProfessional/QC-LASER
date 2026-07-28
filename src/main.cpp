@@ -102,6 +102,7 @@ int main() {
     G_threadpool.reset(); // Destroy all threads
     G_outputpool.reset(); // Destroy all results
     // ========================================================================================================
-    std::cout << "End of Program : Thank you and see you later." << std::endl;
+    std::cout << "<<< https://github.com/DefinitelyProfessional/QC-LASER >>>\n";
+    std::cout << "<<<    End of Program : Thank you and see you later.   >>>" << std::endl;
     return 0;
 }

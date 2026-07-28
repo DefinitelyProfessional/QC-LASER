@@ -15,6 +15,7 @@
 #include <cstddef>
 #include <vector>
 #include <string>
+#include <tuple>
 #include <mutex>
 
 // Helper for static_assert in template branches
@@ -24,13 +25,6 @@ namespace DATA {
 // Manage Loading & Storing the Sandbox registry
 class SandboxDataManager {
 private:
-    // File variables
-    std::filesystem::path saved_data_dir;
-    std::string active_filename;
-
-    // Tools for multithreading
-    mutable std::shared_mutex sandbox_lock; // Read/Write Lock
-
     // Registry handle
     struct MathObjMap {
         MathObjType type;
@@ -43,24 +37,40 @@ private:
         T obj_data;
     };
 
-    // sandbox_registry for tracking name strings by hash keys
-    // connected to MathObj stored in dedicated vectors
-    // in memory and tracked with MathObjMap
+    typedef std::tuple<
+        std::vector<ObjEntry<RealVector>>,
+        std::vector<ObjEntry<ComplexVector>>,
+        std::vector<ObjEntry<RealMatrix>>,
+        std::vector<ObjEntry<ComplexMatrix>>
+    > ObjPool; ObjPool obj_pool;
     boost::unordered_flat_map<uint64_t, MathObjMap> sandbox_registry;
     std::vector<std::string> key_str_pool; // display for user
-    std::vector<ObjEntry<RealVector>> real_vector_pool;
-    std::vector<ObjEntry<ComplexVector>> complex_vector_pool;
-    std::vector<ObjEntry<RealMatrix>> real_matrix_pool;
-    std::vector<ObjEntry<ComplexMatrix>> complex_matrix_pool;
+    
+    // File variables
+    std::filesystem::path saved_data_dir;
+    std::string active_filename;
+    // Tools for multithreading
+    mutable std::shared_mutex sandbox_lock; // Read/Write Lock
 
-    // Compile-time routing : return corresponding data pool [!!!SCALABLE!!!]
-    template<typename T> auto& get_pool() {
-        if constexpr (std::is_same_v<T, RealVector>) return real_vector_pool;
-        else if constexpr (std::is_same_v<T, ComplexVector>) return complex_vector_pool;
-        else if constexpr (std::is_same_v<T, RealMatrix>) return real_matrix_pool;
-        else if constexpr (std::is_same_v<T, ComplexMatrix>) return complex_matrix_pool;
-        else static_assert(always_false_v<T>, "Unsupported math object type.");
+    // To help alongside swap_pop
+    template<typename T> void run_in_pool(MathObjType type, T&& pool_buffer) {
+        switch (type) {
+            case MathObjType::RealVector:
+                std::forward<T>(pool_buffer)(std::get<0>(obj_pool)); break;
+            case MathObjType::ComplexVector:
+                std::forward<T>(pool_buffer)(std::get<1>(obj_pool)); break;
+            case MathObjType::RealMatrix:
+                std::forward<T>(pool_buffer)(std::get<2>(obj_pool)); break;
+            case MathObjType::ComplexMatrix:
+                std::forward<T>(pool_buffer)(std::get<3>(obj_pool)); break;
+        }
     }
+
+    // Compile-time routing : return corresponding data pool
+    template<typename T> inline auto& get_pool() {
+        return std::get<std::vector<ObjEntry<T>>>(obj_pool);
+    }
+
     // Compile-time routing : return corresponding math object type [!!!SCALABLE!!!]
     template<typename T> constexpr MathObjType get_type() {
         if constexpr (std::is_same_v<T, RealVector>) return MathObjType::RealVector;
@@ -69,6 +79,7 @@ private:
         else if constexpr (std::is_same_v<T, ComplexMatrix>) return MathObjType::ComplexMatrix;
         else static_assert(always_false_v<T>, "Unsupported math object type.");
     }
+
     // Compile-time routing : helper to manage delete objects from their pools
     template<typename T> void swap_pop(std::vector<ObjEntry<T>>& obj_pool, uint32_t selected_obj_idx, uint32_t selected_key_idx) {
         size_t last_obj_idx = obj_pool.size() - 1;
@@ -164,13 +175,13 @@ public:
         
         // Get map registry of specified hash
         auto it = sandbox_registry.find(hash);
-        // If specified type doesn't match the object's type
-        if (it->second.type != get_type<T>()) {
-            return {false, std::string(key) + " object type mismatch.", std::nullopt};
-        }
         // If specified key and its object doesn't exist
         if (it == sandbox_registry.end()) {
             return {false, std::string(key) + " already exists.", std::nullopt};
+        }
+        // If specified type doesn't match the object's type
+        if (it->second.type != get_type<T>()) {
+            return {false, std::string(key) + " object type mismatch.", std::nullopt};
         }
 
         // Return hard copy, registry keeps the original
@@ -186,15 +197,14 @@ public:
         
         // Get map registry of specified hash
         auto it = sandbox_registry.find(hash);
-        MathObjMap selected_map = it->second;
-
-        // If specified type doesn't match the object's type
-        if (selected_map.type != get_type<T>()) {
-            return {false, std::string(key) + " object type mismatch.", std::nullopt};
-        }
         // If specified key and its object doesn't exist
         if (it == sandbox_registry.end()) {
             return {false, std::string(key) + " doesn't exist.", std::nullopt};
+        }
+        MathObjMap selected_map = it->second;
+        // If specified type doesn't match the object's type
+        if (selected_map.type != get_type<T>()) {
+            return {false, std::string(key) + " object type mismatch.", std::nullopt};
         }
         
         auto& obj_pool = get_pool<T>();

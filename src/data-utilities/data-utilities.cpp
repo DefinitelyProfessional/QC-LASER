@@ -1,6 +1,5 @@
 #include "data-utilities/data-utilities.hpp"
 #include "data-utilities/data-payload.hpp"
-#include "math-core/math-objects.hpp"
 
 #include <boost/unordered/unordered_flat_map.hpp> // IWYU pragma: export
 
@@ -35,20 +34,13 @@ StatusPayload SandboxDataManager::remove(std::string_view key) {
 
     MathObjMap selected_map = it->second;
     // Remove the object from its pool
-    switch (selected_map.type) {
-        case MathObjType::RealVector:
-            swap_pop(real_vector_pool, selected_map.obj_index, selected_map.key_index);
-            break;
-        case MathObjType::ComplexVector:
-            swap_pop(complex_vector_pool, selected_map.obj_index, selected_map.key_index);
-            break;
-        case MathObjType::RealMatrix:
-            swap_pop(real_matrix_pool, selected_map.obj_index, selected_map.key_index);
-            break;
-        case MathObjType::ComplexMatrix:
-            swap_pop(complex_matrix_pool, selected_map.obj_index, selected_map.key_index);
-            break;
-    }
+    run_in_pool(selected_map.type,
+    [this, &selected_map](auto& pool_buffer){
+        swap_pop(
+            pool_buffer,
+            selected_map.obj_index,
+            selected_map.key_index);
+    });
 
     // Finally remove the map registry
     sandbox_registry.erase(it);
@@ -73,24 +65,16 @@ StatusPayload SandboxDataManager::rename(std::string_view old_key, std::string_v
     if (sandbox_registry.find(new_hash) != sandbox_registry.end()) {
         return {false, std::string(old_key) + " already exists (or hash collision)."};
     }
+
     // Update key_str and registry hash
     MathObjMap old_map_data = old_it->second;
     key_str_pool[old_map_data.key_index] = std::string(new_key);
+    
     // Update the old ObjEntry hash_key to have the new_hash of renamed key
-    switch (old_map_data.type) {
-        case MathObjType::RealVector:
-            real_vector_pool[old_map_data.obj_index].hash_key = new_hash;
-            break;
-        case MathObjType::ComplexVector:
-            complex_vector_pool[old_map_data.obj_index].hash_key = new_hash;
-            break;
-        case MathObjType::RealMatrix:
-            real_matrix_pool[old_map_data.obj_index].hash_key = new_hash;
-            break;
-        case MathObjType::ComplexMatrix:
-            complex_matrix_pool[old_map_data.obj_index].hash_key = new_hash;
-            break;
-    }
+    run_in_pool(old_map_data.type, [&old_map_data, &new_hash](auto& pool_buffer){
+        pool_buffer[old_map_data.obj_index].hash_key = new_hash;
+    });
+
     sandbox_registry.erase(old_it);
     sandbox_registry.emplace(new_hash, old_map_data);
     return {true, std::string(old_key) + " renamed to " + std::string(new_key)};
