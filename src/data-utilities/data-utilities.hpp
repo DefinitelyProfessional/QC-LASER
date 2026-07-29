@@ -67,6 +67,22 @@ private:
         else {static_assert(always_false_v<T>, "Unsupported math object type.");}
     }
 
+    // To help alongside swap_pop [!!!SCALABLE!!!]
+    template<typename T> void exe_with_pool(MathObjType type, T&& func_name) {
+        // std::forward<T>(func_name) is the forwarded lambda function
+        // (std::get<0>(obj_pool)) is the argument given to the lambda 
+        switch (type) {
+            case MathObjType::RealVector:
+                std::forward<T>(func_name)(std::get<0>(obj_pool)); break;
+            case MathObjType::ComplexVector:
+                std::forward<T>(func_name)(std::get<1>(obj_pool)); break;
+            case MathObjType::RealMatrix:
+                std::forward<T>(func_name)(std::get<2>(obj_pool)); break;
+            case MathObjType::ComplexMatrix:
+                std::forward<T>(func_name)(std::get<3>(obj_pool)); break;
+        }
+    }
+
     // Compile-time routing : helper to manage delete objects from their pools
     template<typename T> void swap_pop(std::vector<ObjEntry<T>>& obj_pool, uint32_t selected_obj_idx, uint32_t selected_key_idx) {
         size_t last_obj_idx = obj_pool.size() - 1;
@@ -85,22 +101,6 @@ private:
         }
         obj_pool.pop_back();
         key_str_pool.pop_back();
-    }
-
-    // To help alongside swap_pop [!!!SCALABLE!!!]
-    template<typename T> void exe_with_pool(MathObjType type, T&& func_name) {
-        // std::forward<T>(func_name) is the forwarded lambda function
-        // (std::get<0>(obj_pool)) is the argument given to the lambda 
-        switch (type) {
-            case MathObjType::RealVector:
-                std::forward<T>(func_name)(std::get<0>(obj_pool)); break;
-            case MathObjType::ComplexVector:
-                std::forward<T>(func_name)(std::get<1>(obj_pool)); break;
-            case MathObjType::RealMatrix:
-                std::forward<T>(func_name)(std::get<2>(obj_pool)); break;
-            case MathObjType::ComplexMatrix:
-                std::forward<T>(func_name)(std::get<3>(obj_pool)); break;
-        }
     }
 
     // Internal key_str hashing for memory efficient mapping 

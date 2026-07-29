@@ -1,13 +1,12 @@
 #include "data-utilities/data-utilities.hpp"
+
+#include "data-utilities/HDF5-utilities/write-actions.hpp"
 #include "data-utilities/data-payload.hpp"
-#include "data-utilities/HDF5-utilities/hdf5-utilities.hpp"
-#include "hdf5-utilities.hpp"
 
 #include <H5Exception.h>
 #include <H5Fpublic.h>
 #include <H5Group.h>
 #include <H5File.h>
-#include <H5Cpp.h>
 
 #include <shared_mutex>
 #include <filesystem>
@@ -31,11 +30,12 @@ StatusPayload SandboxDataManager::save_whole_sandbox_internal() const {
     fs::path tmp_filepath = saved_data_dir / (active_filename + ".tmp");
 
     if (!fs::exists(s_filepath)) {
-        std::cout << "[SANDBOX] Saving new sandbox session targeting : " << active_filename << "\n";
+        std::cout << "\n[SANDBOX] Saving new sandbox session targeting : " << active_filename << "\n";
     } else {std::cout << "[SANDBOX] Saving existing sandbox session from : " << active_filename << "\n";}
 
     // Attempt to write into a temporary file
     try {
+        // Overwrite mode
         H5::H5File file(tmp_filepath.string(), H5F_ACC_TRUNC);
 
         // Groups by math object class

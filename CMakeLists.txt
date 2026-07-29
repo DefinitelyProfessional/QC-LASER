@@ -56,8 +56,9 @@ set(APP_SOURCES
     src/data-utilities/data-utilities.cpp
     src/data-utilities/data-payload.hpp
     src/data-utilities/HDF5-utilities/hdf5-utilities.hpp
-    src/data-utilities/HDF5-utilities/hdf5-utilities.cpp
+    src/data-utilities/HDF5-utilities/write-actions.hpp
     src/data-utilities/HDF5-utilities/write-actions.cpp
+    src/data-utilities/HDF5-utilities/read-actions.hpp
     src/data-utilities/HDF5-utilities/read-actions.cpp
     src/math-core/math-functions.hpp
     src/math-core/math-functions.cpp

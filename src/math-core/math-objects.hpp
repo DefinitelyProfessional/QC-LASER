@@ -5,6 +5,24 @@
 #include <vector>
 // #include <array>
 
+/*
+Unfortunately, for every new math object data type, 
+there will be a LOT of source code repetition to implement -
+BY HAND on several files, Here are the following checklist :
+
+1. math-core/ : 
+- MathObjType
+
+2. data-utilities/ :
+- data-utilities.hpp parts marked "[!!! SCALABLE !!!]"
+
+3. data-utilities/HDF5-utilities/ : (almost every file in here basically)
+- write-actions.hpp file-write implementation of individual math objects
+- write-actions.cpp execution of writing every math objects to HDF5 file
+- read-actions.cpp  load file data into data registry, bit tedious alert
+- hdf5-utilities.hpp implement C++ datatypes to HDF5 native datatypes.
+*/
+
 // Versatile simple real number Vector. RealVector(dim, data)
 struct RealVector {
     std::vector<double> v_data;
@@ -19,6 +37,7 @@ struct RealVector {
     inline const double& operator()(uint32_t i) const { return v_data[i]; }
 
     // Zero-copy raw pointer exposure for the UI buffer
+    inline double* raw_buffer() { return v_data.data(); }
     inline const double* raw_buffer() const { return v_data.data(); }
 };
 
@@ -36,6 +55,7 @@ struct ComplexVector {
     inline const std::complex<double>& operator()(uint32_t i) const { return v_data[i]; }
 
     // Zero-copy raw pointer exposure for the UI buffer
+    inline std::complex<double>* raw_buffer() { return v_data.data(); }
     inline const std::complex<double>* raw_buffer() const { return v_data.data(); }
 };
 
@@ -55,6 +75,7 @@ struct RealMatrix {
     inline const double& operator()(uint32_t i, uint32_t j) const { return m_data[i * m_cols + j]; }
 
     // Zero-copy raw pointer exposure for the UI buffer
+    inline double* raw_buffer() {return m_data.data();}
     inline const double* raw_buffer() const {return m_data.data();}
 };
 // Versatile simple complex number Matrix. ComplexMatrix(rows, cols, data)
@@ -73,6 +94,7 @@ struct ComplexMatrix {
     inline const std::complex<double>& operator()(uint32_t i, uint32_t j) const { return m_data[i * m_cols + j]; }
 
     // Zero-copy raw pointer exposure for the UI buffer
+    inline std::complex<double>* raw_buffer() { return m_data.data(); }
     inline const std::complex<double>* raw_buffer() const { return m_data.data(); }
 };
 
