@@ -53,10 +53,12 @@ set(APP_SOURCES
     src/main.cpp
     src/app.rc
     src/data-utilities/data-utilities.hpp
-    src/data-utilities/data-payload.hpp
     src/data-utilities/data-utilities.cpp
-    src/data-utilities/write-actions.cpp
-    src/data-utilities/read-actions.cpp
+    src/data-utilities/data-payload.hpp
+    src/data-utilities/HDF5-utilities/hdf5-utilities.hpp
+    src/data-utilities/HDF5-utilities/hdf5-utilities.cpp
+    src/data-utilities/HDF5-utilities/write-actions.cpp
+    src/data-utilities/HDF5-utilities/read-actions.cpp
     src/math-core/math-functions.hpp
     src/math-core/math-functions.cpp
     src/math-core/math-objects.hpp

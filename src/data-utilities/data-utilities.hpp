@@ -5,7 +5,7 @@
 
 #include <boost/unordered/unordered_flat_map.hpp> // IWYU pragma: export
 #include <shared_mutex>
-#include <type_traits>
+// #include <type_traits>
 #include <string_view>
 #include <filesystem>
 #include <functional>
@@ -27,9 +27,9 @@ class SandboxDataManager {
 private:
     // Registry handle
     struct MathObjMap {
-        MathObjType type;
         uint32_t obj_index;
         uint32_t key_index;
+        MathObjType type;
     };
     // Encapsulate obj_data and hash_key to sync with registry
     template<typename T> struct ObjEntry {
@@ -37,7 +37,7 @@ private:
         T obj_data;
     };
 
-    typedef std::tuple<
+    typedef std::tuple< // [!!!SCALABLE!!!]
         std::vector<ObjEntry<RealVector>>,
         std::vector<ObjEntry<ComplexVector>>,
         std::vector<ObjEntry<RealMatrix>>,
@@ -50,22 +50,8 @@ private:
     // File variables
     std::filesystem::path saved_data_dir;
     std::string active_filename;
-    // Tools for multithreading
-    mutable std::shared_mutex sandbox_lock; // Read/Write Lock
-
-    // To help alongside swap_pop [!!!SCALABLE!!!]
-    template<typename T> void run_in_pool(MathObjType type, T&& pool_buffer) {
-        switch (type) {
-            case MathObjType::RealVector:
-                std::forward<T>(pool_buffer)(std::get<0>(obj_pool)); break;
-            case MathObjType::ComplexVector:
-                std::forward<T>(pool_buffer)(std::get<1>(obj_pool)); break;
-            case MathObjType::RealMatrix:
-                std::forward<T>(pool_buffer)(std::get<2>(obj_pool)); break;
-            case MathObjType::ComplexMatrix:
-                std::forward<T>(pool_buffer)(std::get<3>(obj_pool)); break;
-        }
-    }
+    // Read/Write locks for multithreading
+    mutable std::shared_mutex sandbox_lock;
 
     // Compile-time routing : return corresponding data pool
     template<typename T> constexpr inline auto& get_pool() {
@@ -74,11 +60,11 @@ private:
 
     // Compile-time routing : return corresponding math object type [!!!SCALABLE!!!]
     template<typename T> constexpr MathObjType get_type() {
-        if constexpr (std::is_same_v<T, RealVector>) return MathObjType::RealVector;
-        else if constexpr (std::is_same_v<T, ComplexVector>) return MathObjType::ComplexVector;
-        else if constexpr (std::is_same_v<T, RealMatrix>) return MathObjType::RealMatrix;
-        else if constexpr (std::is_same_v<T, ComplexMatrix>) return MathObjType::ComplexMatrix;
-        else static_assert(always_false_v<T>, "Unsupported math object type.");
+        if constexpr (std::is_same_v<T, RealVector>) {return MathObjType::RealVector;}
+        else if constexpr (std::is_same_v<T, ComplexVector>) {return MathObjType::ComplexVector;}
+        else if constexpr (std::is_same_v<T, RealMatrix>) {return MathObjType::RealMatrix;}
+        else if constexpr (std::is_same_v<T, ComplexMatrix>) {return MathObjType::ComplexMatrix;}
+        else {static_assert(always_false_v<T>, "Unsupported math object type.");}
     }
 
     // Compile-time routing : helper to manage delete objects from their pools
@@ -99,6 +85,22 @@ private:
         }
         obj_pool.pop_back();
         key_str_pool.pop_back();
+    }
+
+    // To help alongside swap_pop [!!!SCALABLE!!!]
+    template<typename T> void exe_with_pool(MathObjType type, T&& func_name) {
+        // std::forward<T>(func_name) is the forwarded lambda function
+        // (std::get<0>(obj_pool)) is the argument given to the lambda 
+        switch (type) {
+            case MathObjType::RealVector:
+                std::forward<T>(func_name)(std::get<0>(obj_pool)); break;
+            case MathObjType::ComplexVector:
+                std::forward<T>(func_name)(std::get<1>(obj_pool)); break;
+            case MathObjType::RealMatrix:
+                std::forward<T>(func_name)(std::get<2>(obj_pool)); break;
+            case MathObjType::ComplexMatrix:
+                std::forward<T>(func_name)(std::get<3>(obj_pool)); break;
+        }
     }
 
     // Internal key_str hashing for memory efficient mapping 
@@ -163,7 +165,7 @@ public:
         key_str_pool.push_back(std::string(key));
 
         // Register to sandbox_registry
-        sandbox_registry[hash] = {type, obj_index, key_index};
+        sandbox_registry[hash] = {obj_index, key_index, type};
         return {"Added " + std::string(key), true};
     }
 

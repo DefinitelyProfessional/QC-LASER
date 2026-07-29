@@ -1,3 +1,4 @@
+//"C:\Users\locke\AppData\Local\Python\pythoncore-3.14-64\python.exe"
 #include "data-utilities/data-utilities.hpp"
 #include "data-utilities/data-payload.hpp"
 #include "ui-utilities/stage-utilities.hpp"
@@ -47,13 +48,13 @@ int main() {
     UI::SandboxManagerWindow* sandbox_win = win_manager.RegisterWindow<UI::SandboxManagerWindow>(
         SAVED_DATA_DIR, active_sandbox.get_active_filename());
 
-    auto  switch_whole_sandbox = [&active_sandbox, sandbox_win](std::string filename) {
+    auto  switch_whole_sandbox = [&active_sandbox, &sandbox_win](std::string filename) {
         sandbox_win->set_error_buffer(true, "Loading " + filename + " ...");
 
-        G_threadpool->assign_task([&active_sandbox, sandbox_win, target = std::move(filename)]() {
+        G_threadpool->assign_task([&active_sandbox, &sandbox_win, target = std::move(filename)]() {
             StatusPayload status = active_sandbox.switch_whole_sandbox(target);
 
-            G_outputpool->enqueue([&active_sandbox, sandbox_win, result = std::move(status)]() {
+            G_outputpool->enqueue([&active_sandbox, &sandbox_win, result = std::move(status)]() {
                 sandbox_win->set_error_buffer(result.success, result.msg);
                 if (result.success) {sandbox_win->set_active_filename(active_sandbox.get_active_filename());}
                 sandbox_win->reset_busy_status();
@@ -63,13 +64,13 @@ int main() {
     };
     sandbox_win->EVENT_OnSelectSandbox =  switch_whole_sandbox;
     sandbox_win->EVENT_OnCreateSandbox =  switch_whole_sandbox;
-    sandbox_win->EVENT_OnSaveCurrentSandbox = [&active_sandbox, sandbox_win]() {
+    sandbox_win->EVENT_OnSaveCurrentSandbox = [&active_sandbox, &sandbox_win]() {
         sandbox_win->set_error_buffer(true, "Saving active sandbox ...");
 
-        G_threadpool->assign_task([&active_sandbox, sandbox_win]{
+        G_threadpool->assign_task([&active_sandbox, &sandbox_win]{
             StatusPayload status = active_sandbox.save_whole_sandbox();
 
-            G_outputpool->enqueue([sandbox_win, result = std::move(status)]{
+            G_outputpool->enqueue([&sandbox_win, result = std::move(status)]{
                 sandbox_win->set_error_buffer(result.success, result.msg);
                 sandbox_win->reset_busy_status();
                 glfwPostEmptyEvent(); // Wake up Main Thread to process UI changes

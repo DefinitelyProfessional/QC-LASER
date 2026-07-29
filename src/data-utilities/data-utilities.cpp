@@ -34,12 +34,13 @@ StatusPayload SandboxDataManager::remove(std::string_view key) {
 
     MathObjMap selected_map = it->second;
     // Remove the object from its pool
-    run_in_pool(selected_map.type,
-    [this, &selected_map](auto& pool_buffer){
+    exe_with_pool(selected_map.type,
+    [this, &selected_map](auto& pool){
         swap_pop(
-            pool_buffer,
+            pool,
             selected_map.obj_index,
-            selected_map.key_index);
+            selected_map.key_index
+        );
     });
 
     // Finally remove the map registry
@@ -71,8 +72,8 @@ StatusPayload SandboxDataManager::rename(std::string_view old_key, std::string_v
     key_str_pool[old_map_data.key_index] = std::string(new_key);
     
     // Update the old ObjEntry hash_key to have the new_hash of renamed key
-    run_in_pool(old_map_data.type, [&old_map_data, &new_hash](auto& pool_buffer){
-        pool_buffer[old_map_data.obj_index].hash_key = new_hash;
+    exe_with_pool(old_map_data.type, [&old_map_data, &new_hash](auto& pool){
+        pool[old_map_data.obj_index].hash_key = new_hash;
     });
 
     sandbox_registry.erase(old_it);

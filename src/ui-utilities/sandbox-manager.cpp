@@ -219,15 +219,16 @@ void SandboxManagerWindow::Render() {
                 if (ImGui::Selectable(filename.c_str(), selected_index == i)) {
                     selected_index = i;
                 }
-                ImGui::BeginDisabled(is_busy);
+                
                 if ((ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left)) ||
                     (ImGui::IsItemFocused() && ImGui::IsKeyPressed(ImGuiKey_Enter))) {
+                    ImGui::BeginDisabled(is_busy);
                     selected_index = i;
                     if (EVENT_OnSelectSandbox) {
                         EVENT_OnSelectSandbox(db_filenames[selected_index]);
                         is_busy = true; // Main will reset this
                     }
-                ImGui::EndDisabled();
+                    ImGui::EndDisabled();
                 }
             }
         }

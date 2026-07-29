@@ -3,6 +3,7 @@
 #include <complex>
 #include <cstdint>
 #include <vector>
+// #include <array>
 
 // Versatile simple real number Vector. RealVector(dim, data)
 struct RealVector {
@@ -82,3 +83,10 @@ enum class MathObjType : uint8_t {
     RealMatrix = 2,
     ComplexMatrix = 3
 };
+
+// constexpr std::array<MathObjType, 4> ALL_MATH_OBJ_TYPES = {
+//     MathObjType::RealVector,
+//     MathObjType::ComplexVector,
+//     MathObjType::RealMatrix,
+//     MathObjType::ComplexMatrix
+// };

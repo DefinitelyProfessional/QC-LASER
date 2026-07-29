@@ -19,5 +19,6 @@
         "--completion-style=detailed",
         "--function-arg-placeholders",
         "-j=4" 
-    ]
+    ],
+    "python-envs.defaultEnvManager": "ms-python.python:system"
 }
