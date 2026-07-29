@@ -43,8 +43,7 @@ StatusPayload SandboxDataManager::load_whole_sandbox_internal() {
     if (!fs::exists(s_filepath)) {
         std::cout << "\n[SANDBOX] Creating new sandbox session targeting : " << active_filename << "\n";
         return {"New Sandbox : " + active_filename, true}; // There is nothing to load, exit.
-    }
-    else {std::cout << "[SANDBOX] Loading existing sandbox session from : " << active_filename << "\n";}
+    } else {std::cout << "\n[SANDBOX] Loading existing sandbox session from : " << active_filename << "\n";}
 
     // Aggresive memory clearing to make room for loading new data
     sandbox_registry = boost::unordered_flat_map<uint64_t, MathObjMap>();

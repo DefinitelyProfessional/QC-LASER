@@ -17,7 +17,7 @@ namespace fs = std::filesystem;
 namespace UI {
 // Constructor implementation
 SandboxManagerWindow::SandboxManagerWindow(const fs::path& data_dir, std::string active_file) : 
-    UIWindow("Sandbox Manager"), saved_data_dir(data_dir), active_filename(active_file) {
+UIWindow(">>> SANDBOX MANAGER"), saved_data_dir(data_dir), active_filename(active_file) {
     refresh_filenames();
 }
 
@@ -117,8 +117,9 @@ void SandboxManagerWindow::refresh_filenames() {
 
 // Public
 void SandboxManagerWindow::Render() {
-    // Provide a sensible default size, but allow the user to resize it later
+    // Window settings
     ImGui::SetNextWindowSize(ImVec2(450, 400), ImGuiCond_FirstUseEver);
+    ImGui::SetNextWindowPos(ImVec2(0, 0), ImGuiCond_FirstUseEver);
     ImGui::Begin(window_name.c_str());
 
     // ==========================================
@@ -145,18 +146,23 @@ void SandboxManagerWindow::Render() {
         ImGui::TextColored(error_color, "%s", error_buffer.c_str());
     }
     // Input box for the new file name
-    ImGui::InputTextWithHint(
+    bool create_text_entered = ImGui::InputTextWithHint(
         "###CreateNewInputText",
         "ex : new_sandbox.h5",
         new_sandbox_input,
         sizeof(new_sandbox_input),
-        ImGuiInputTextFlags_CharsNoBlank
+        ImGuiInputTextFlags_CharsNoBlank |
+        ImGuiInputTextFlags_EnterReturnsTrue
     );
     ImGui::SameLine();
     
-    // Only allow creation if the user actually typed something
-    ImGui::BeginDisabled(new_sandbox_input[0] == '\0' || is_busy);
-    if (ImGui::Button("Create###CreateNewButton")) {
+    bool can_submit = (new_sandbox_input[0] != '\0' && !is_busy);
+
+    ImGui::BeginDisabled(!can_submit);
+    bool create_button_pressed = ImGui::Button("Create###CreateNewButton");
+    ImGui::EndDisabled();
+
+    if (can_submit && (create_text_entered || create_button_pressed)) {
         std::string filename = std::string(new_sandbox_input);
         if (is_valid_new_filename(filename)) {
             if (EVENT_OnCreateSandbox) {
@@ -167,7 +173,6 @@ void SandboxManagerWindow::Render() {
         // Clear the input box after submission
         new_sandbox_input[0] = '\0';
     }
-    ImGui::EndDisabled();
 
     ImGui::Separator();
     // ==========================================
@@ -182,8 +187,7 @@ void SandboxManagerWindow::Render() {
     ImVec2 table_size = ImVec2(0.0f, -ImGui::GetFrameHeightWithSpacing() * 1.1f);
 
     // TEMPORARY FPS READ
-    ImGuiIO& io = ImGui::GetIO();
-    ImGui::Text("FPS : %.1f", io.Framerate);
+    ImGui::Text("FPS : %.1f", ImGui::GetIO().Framerate);
 
     // Changed from 1 column to 2 columns
     if (ImGui::BeginTable("###SandboxFilesTable", 2, table_flags, table_size)) {
@@ -243,8 +247,9 @@ void SandboxManagerWindow::Render() {
     }
     ImGui::EndDisabled();
 
-    // The Confirmation Modal
-    if (ImGui::BeginPopupModal("Delete Confirmation", NULL, ImGuiWindowFlags_AlwaysAutoResize)) {
+    // Delete Confirmation Popup 
+    if (ImGui::BeginPopup("Delete Confirmation")) {
+        ImGui::TextColored(ImVec4(1.0f,0.0f,0.0f,1.0f), "!!! DELETE FILE CONFIRMATION !!!");
         ImGui::Text("Confirm to move %d file(s) to the Recycle Bin", selected_delete_count);
         ImGui::Separator();
         

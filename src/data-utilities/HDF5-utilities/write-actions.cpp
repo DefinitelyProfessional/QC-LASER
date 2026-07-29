@@ -31,7 +31,7 @@ StatusPayload SandboxDataManager::save_whole_sandbox_internal() const {
 
     if (!fs::exists(s_filepath)) {
         std::cout << "\n[SANDBOX] Saving new sandbox session targeting : " << active_filename << "\n";
-    } else {std::cout << "[SANDBOX] Saving existing sandbox session from : " << active_filename << "\n";}
+    } else {std::cout << "\n[SANDBOX] Saving existing sandbox session from : " << active_filename << "\n";}
 
     // Attempt to write into a temporary file
     try {

@@ -9,7 +9,7 @@
 #include <string>
 
 namespace UI {
-// Manage Sandbox files, Create, Select, Delete
+// Manage Sandbox files, Create, Select, Delete, Rename, etc
 class SandboxManagerWindow : public UIWindow {
 private:
     // File variables
@@ -52,6 +52,19 @@ public:
     // Refresh filenames and other states and functionalities
     void refresh_filenames();
 
+    // Render function definition
+    void Render() override;
+};
+
+
+class MathObjectCreatorWindow : public UIWindow {
+private:
+    std::string error_buffer = "";
+    bool success = false;
+    bool is_busy = false;
+public:
+    // Constructor simply sets UIWindow window_name
+    explicit MathObjectCreatorWindow();
     // Render function definition
     void Render() override;
 };

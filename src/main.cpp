@@ -25,26 +25,27 @@ std::unique_ptr<MULTI::ThreadPool> G_threadpool;
 std::unique_ptr<MULTI::OutputPool> G_outputpool;
 
 int main() {
-    // Initialize ThreadPool, OutputPool, and directory locations =========================================================
+    // Initialize ThreadPool, OutputPool, and directory locations
     G_threadpool = std::make_unique<MULTI::ThreadPool>(3); // CONCURRENCY CAUTION
     G_outputpool = std::make_unique<MULTI::OutputPool>(); // Will be executed at main thread
     fs::path ROOT_DIR, SAVED_DATA_DIR, ASSETS_DIR;
     STAGE::InitializeDirectories(ROOT_DIR, SAVED_DATA_DIR, ASSETS_DIR);
 
 
-    // IMGUI UI SUBSYSTEMS INITIALIZATION =====================================================================
+    // IMGUI UI SUBSYSTEMS INITIALIZATION
     GLFWwindow* host_window = STAGE::InitializeUI(
-        750, 1000, "QC Linear Algebra Sandbox Engine R.", ROOT_DIR);
+        1200, 1000, "QC Linear Algebra Sandbox Engine R.", ROOT_DIR);
     if (!host_window) {std::cerr << "Fatal Error: Failed to initialize application stages."; return -1;}
     ImVec4 clear_color = ImVec4(0.12f, 0.12f, 0.14f, 1.00f);
-    // ========================================================================================================
 
 
-    // Load the Default SandboxDataManager being "MAIN_sandbox.h5" ===============================================
+    // Load the Default SandboxDataManager being "MAIN_sandbox.h5"
     DATA::SandboxDataManager active_sandbox(SAVED_DATA_DIR, "MAIN_sandbox.h5");
-    // WindowManager to handle unified rendering of all windows ===============================================
+    // WindowManager to handle unified rendering of all windows
     STAGE::WindowManager win_manager;
-    // Register windows and get their pointers for event listeners ============================================
+
+
+    // SANDBOX MANAGER WINDOW handles basic database file explorer, create, select, delete, etc. 
     UI::SandboxManagerWindow* sandbox_win = win_manager.RegisterWindow<UI::SandboxManagerWindow>(
         SAVED_DATA_DIR, active_sandbox.get_active_filename());
 
@@ -73,36 +74,35 @@ int main() {
             G_outputpool->enqueue([&sandbox_win, result = std::move(status)]{
                 sandbox_win->set_error_buffer(result.success, result.msg);
                 sandbox_win->reset_busy_status();
+                sandbox_win->refresh_filenames();
                 glfwPostEmptyEvent(); // Wake up Main Thread to process UI changes
             });
         });
     };
 
 
-    // CORE IMGUI RENDER LOOP =================================================================================
+    // MATH OBJECT CREATOR WINDOW handles creation of every math object, get input for entries and registering it
+    UI::MathObjectCreatorWindow* math_obj_creator_win = win_manager.RegisterWindow<UI::MathObjectCreatorWindow>();
+    math_obj_creator_win->SetOpen(true);
+
+    // CORE IMGUI RENDER LOOP
     while (!glfwWindowShouldClose(host_window)) {
         STAGE::StartRenderLoop();
 
         ImGui::ShowDemoWindow();
-        // -----------------------------------------------------------
         // Unified rendering of all window elements
-        // -----------------------------------------------------------
         win_manager.RenderAll();
         G_outputpool->execute_results();
-        // -----------------------------------------------------------
         // Finalize geometry and push to the GPU
-        // -----------------------------------------------------------
         STAGE::EndRenderLoop(host_window, clear_color);
     }
-    // ========================================================================================================
 
 
-    // DEALLOCATE EVERYTHING AND EXIT =========================================================================
+    // DEALLOCATE EVERYTHING AND EXIT
     active_sandbox.save_whole_sandbox(); // Save current data before exit
     STAGE::ShutdownUI(host_window);
     G_threadpool.reset(); // Destroy all threads
     G_outputpool.reset(); // Destroy all results
-    // ========================================================================================================
     std::cout << "\n<<< https://github.com/DefinitelyProfessional/QC-LASER >>>\n";
     std::cout <<   "<<<    End of Program : Thank you and see you later.   >>>" << std::endl;
     return 0;
