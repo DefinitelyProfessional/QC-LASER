@@ -45,28 +45,28 @@ StatusPayload SandboxDataManager::save_whole_sandbox_internal() const {
         H5::Group complex_mat_group = file.createGroup("/ComplexMatrix");
 
         for (const auto& entry : std::get<0>(obj_pool)) {
-            write_real_vector(
+            write_math_object(
                 real_vec_group, 
                 key_str_pool[sandbox_registry.at(entry.hash_key).key_index], 
                 entry.obj_data
             );
         }
         for (const auto& entry : std::get<1>(obj_pool)) {
-            write_complex_vector(
+            write_math_object(
                 complex_vec_group, 
                 key_str_pool[sandbox_registry.at(entry.hash_key).key_index], 
                 entry.obj_data
             );
         }
         for (const auto& entry : std::get<2>(obj_pool)) {
-            write_real_matrix(
+            write_math_object(
                 real_mat_group, 
                 key_str_pool[sandbox_registry.at(entry.hash_key).key_index], 
                 entry.obj_data
             );
         }
         for (const auto& entry : std::get<3>(obj_pool)) {
-            write_complex_matrix(
+            write_math_object(
                 complex_mat_group, 
                 key_str_pool[sandbox_registry.at(entry.hash_key).key_index], 
                 entry.obj_data
