@@ -34,7 +34,7 @@ int main() {
 
     // IMGUI UI SUBSYSTEMS INITIALIZATION
     GLFWwindow* host_window = STAGE::InitializeUI(
-        1200, 1000, "QC Linear Algebra Sandbox Engine R.", ROOT_DIR);
+        1500, 1000, "QC Linear Algebra Sandbox Engine R.", ROOT_DIR);
     if (!host_window) {std::cerr << "Fatal Error: Failed to initialize application stages."; return -1;}
     ImVec4 clear_color = ImVec4(0.12f, 0.12f, 0.14f, 1.00f);
 
@@ -85,6 +85,7 @@ int main() {
     UI::MathObjectCreatorWindow* math_obj_creator_win = win_manager.RegisterWindow<UI::MathObjectCreatorWindow>();
     math_obj_creator_win->SetOpen(true);
 
+    
     // CORE IMGUI RENDER LOOP
     while (!glfwWindowShouldClose(host_window)) {
         STAGE::StartRenderLoop();

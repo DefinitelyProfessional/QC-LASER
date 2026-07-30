@@ -118,13 +118,11 @@ void SandboxManagerWindow::refresh_filenames() {
 // Public
 void SandboxManagerWindow::Render() {
     // Window settings
-    ImGui::SetNextWindowSize(ImVec2(450, 400), ImGuiCond_FirstUseEver);
+    ImGui::SetNextWindowSize(ImVec2(400, 350), ImGuiCond_FirstUseEver);
     ImGui::SetNextWindowPos(ImVec2(0, 0), ImGuiCond_FirstUseEver);
     ImGui::Begin(window_name.c_str());
 
-    // ==========================================
     // TOP PANEL Current Active and Create New
-    // ==========================================
     ImGui::Text("Current Active Sandbox : ");
     ImGui::SameLine();
     ImGui::TextColored(ImVec4(1.0f,0.5f,0.0f,1.0f), "%s", active_filename.c_str());
@@ -141,9 +139,11 @@ void SandboxManagerWindow::Render() {
     ImGui::Separator();
 
     ImGui::Text("Create New Sandbox :");
+    // Error buffer display
     if (!error_buffer.empty()) {
-        ImVec4 error_color = (success) ? ImVec4(0.2f,1.0f,0.1f,1.0f) : ImVec4(1.0f,0.0f,0.0f,1.0f);
-        ImGui::TextColored(error_color, "%s", error_buffer.c_str());
+        ImGui::TextColored(
+            (success) ? ImVec4(0.2f,1.0f,0.1f,1.0f) : ImVec4(1.0f,0.0f,0.0f,1.0f), 
+            "%s", error_buffer.c_str());
     }
     // Input box for the new file name
     bool create_text_entered = ImGui::InputTextWithHint(
@@ -175,26 +175,35 @@ void SandboxManagerWindow::Render() {
     }
 
     ImGui::Separator();
-    // ==========================================
-    // MIDDLE PANEL Selectable File Table
-    // ==========================================
+
+    // TEMPORARY FPS READ
+    ImGui::Text("FPS : %.1f", ImGui::GetIO().Framerate);
+
+    // MIDDLE PANEL Selectable File Table and refresh file
     ImGui::Text("Double-click to select and load file.");
 
     // Refresh Button aligned above the table
     if (ImGui::Button("Refresh List###RefreshButton")) {refresh_filenames();}
 
-    ImGuiTableFlags table_flags = ImGuiTableFlags_RowBg | ImGuiTableFlags_Borders | ImGuiTableFlags_ScrollY;
-    ImVec2 table_size = ImVec2(0.0f, -ImGui::GetFrameHeightWithSpacing() * 1.1f);
+    // Table as a simple file explorer
+    if (ImGui::BeginTable("###SandboxFilesTable", 2, 
+    ImGuiTableFlags_RowBg | ImGuiTableFlags_Borders | ImGuiTableFlags_ScrollY, 
+    ImVec2(0.0f, -ImGui::GetFrameHeightWithSpacing() * 1.1f))) {
+        // Freeze 0 columns and 1 row to keep header stationary
+        ImGui::TableSetupScrollFreeze(0, 1);
+        // Fixed-width column for the checkbox
+        ImGui::TableSetupColumn("Del###TickBoxes",ImGuiTableColumnFlags_WidthFixed, 20.0f);
+        ImGui::TableSetupColumn("###Available Sandboxes");
+        
+        // ImGui::TableHeadersRow();
 
-    // TEMPORARY FPS READ
-    ImGui::Text("FPS : %.1f", ImGui::GetIO().Framerate);
+        ImGui::TableNextRow(ImGuiTableRowFlags_Headers);
+        
+        ImGui::TableSetColumnIndex(0);
+        ImGui::TextUnformatted("Del"); 
 
-    // Changed from 1 column to 2 columns
-    if (ImGui::BeginTable("###SandboxFilesTable", 2, table_flags, table_size)) {
-        // Setup a narrow, fixed-width column for the checkbox
-        ImGui::TableSetupColumn("###TickBoxes", ImGuiTableColumnFlags_WidthFixed, 20.0f);
-        ImGui::TableSetupColumn("Available Sandboxes :");
-        ImGui::TableHeadersRow();
+        ImGui::TableSetColumnIndex(1);
+        ImGui::TextUnformatted("  Available Sandboxes :");
 
         ImGuiListClipper clipper;
         clipper.Begin(db_filenames_size); 
@@ -220,12 +229,13 @@ void SandboxManagerWindow::Render() {
                 ImGui::TableSetColumnIndex(1);
                 const std::string& filename = db_filenames[i];
 
-                if (ImGui::Selectable(filename.c_str(), selected_index == i)) {
+                if (ImGui::Selectable(filename.c_str(), selected_index == i,
+                 ImGuiSelectableFlags_SpanAllColumns)) {
                     selected_index = i;
                 }
                 
                 if ((ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left)) ||
-                    (ImGui::IsItemFocused() && ImGui::IsKeyPressed(ImGuiKey_Enter))) {
+                (ImGui::IsItemFocused() && ImGui::IsKeyPressed(ImGuiKey_Enter))) {
                     ImGui::BeginDisabled(is_busy);
                     selected_index = i;
                     if (EVENT_OnSelectSandbox) {

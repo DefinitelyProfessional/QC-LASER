@@ -3,15 +3,17 @@
 // Include for UIWindow class
 #include "ui-utilities/general-ui-utilities.hpp"
 
-#include "imgui.h"
+// #include "imgui.h"
 
 #include <filesystem>
 
 #include <vector>
 #include <memory>
 
-// Forward declare GLFW
+// Forward declare
 struct GLFWwindow;
+struct ImVec4;
+struct ImVec2;
 
 // Namespace for all STAGE related functionalities include UI initialization and shutdown and more
 namespace STAGE {
@@ -47,6 +49,11 @@ namespace STAGE {
     // Encapsulates the complete boot sequence for GLFW, OpenGL, and ImGui
     GLFWwindow* InitializeUI(int width, int height, const char* TITLE, const std::filesystem::path& ROOT);
 
+    // class WorkSpaceWindow {
+    // private:
+    //     float zoom = 1.0f;
+    //     ImVec2 pan
+    // };
     // Encapsulates the complete beginning of the render loop
     void StartRenderLoop();
 
