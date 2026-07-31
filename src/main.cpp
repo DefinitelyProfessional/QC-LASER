@@ -7,6 +7,8 @@
 #include "thread-core/result-pool.hpp"
 
 #include <GLFW/glfw3.h>
+#include <algorithm>
+#include <thread>
 #include "imgui.h"
 
 #define WIN32_LEAN_AND_MEAN // Trim down Windows header
@@ -14,6 +16,7 @@
 
 #include <filesystem>
 #include <iostream>
+#include <algorithm>
 #include <utility>
 #include <memory>
 #include <string>
@@ -26,7 +29,9 @@ std::unique_ptr<MULTI::OutputPool> G_outputpool;
 
 int main() {
     // Initialize ThreadPool, OutputPool, and directory locations
-    G_threadpool = std::make_unique<MULTI::ThreadPool>(3); // CONCURRENCY CAUTION
+    G_threadpool = std::make_unique<MULTI::ThreadPool>(
+        std::max(1u, std::thread::hardware_concurrency() / 4)
+    ); // CONCURRENCY CAUTION, 25% of available hardware threads will be worker threads
     G_outputpool = std::make_unique<MULTI::OutputPool>(); // Will be executed at main thread
     fs::path ROOT_DIR, SAVED_DATA_DIR, ASSETS_DIR;
     STAGE::InitializeDirectories(ROOT_DIR, SAVED_DATA_DIR, ASSETS_DIR);
@@ -47,7 +52,7 @@ int main() {
 
     // SANDBOX MANAGER WINDOW handles basic database file explorer, create, select, delete, etc. 
     UI::SandboxManagerWindow* sandbox_win = win_manager.RegisterWindow<UI::SandboxManagerWindow>(
-        SAVED_DATA_DIR, active_sandbox.get_active_filename());
+        true, SAVED_DATA_DIR, active_sandbox.get_active_filename());
 
     auto  switch_whole_sandbox = [&active_sandbox, &sandbox_win](std::string filename) {
         sandbox_win->set_error_buffer(true, "Loading " + filename + " ...");
@@ -82,9 +87,17 @@ int main() {
 
 
     // MATH OBJECT CREATOR WINDOW handles creation of every math object, get input for entries and registering it
-    UI::MathObjectCreatorWindow* math_obj_creator_win = win_manager.RegisterWindow<UI::MathObjectCreatorWindow>();
-    math_obj_creator_win->SetOpen(true);
+    UI::MathObjectCreatorWindow* math_obj_creator_win = win_manager.RegisterWindow<UI::MathObjectCreatorWindow>(false);
+    math_obj_creator_win->is_open = false;
 
+
+    // MAIN MENU BAR handles the visibility of almost all windows
+    UI::MainMenuBar* main_menu_bar = win_manager.RegisterWindow<UI::MainMenuBar>();
+    main_menu_bar->EVENT_OnOpenSandboxManager = [&sandbox_win](){
+        sandbox_win->is_open = !sandbox_win->is_open;};
+    main_menu_bar->EVENT_OnOpenMathObjectCreator = [&math_obj_creator_win](){
+        math_obj_creator_win->is_open = !math_obj_creator_win->is_open;};
+    
     
     // CORE IMGUI RENDER LOOP
     while (!glfwWindowShouldClose(host_window)) {

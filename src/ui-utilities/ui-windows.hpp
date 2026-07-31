@@ -38,7 +38,7 @@ public:
     std::function<void(void)> EVENT_OnSaveCurrentSandbox;
 
     // Constructor simply sets UIWindow window_name and directory filepath
-    SandboxManagerWindow(const std::filesystem::path& data_dir, std::string active_file);
+    SandboxManagerWindow(bool start_open,const std::filesystem::path& data_dir, std::string active_file);
 
     // Set the active filename
     inline void set_active_filename(std::string new_active) {active_filename = new_active;};
@@ -56,7 +56,7 @@ public:
     void Render() override;
 };
 
-
+// Manage math objects present in the active sandbox, CRUD basically
 class MathObjectCreatorWindow : public UIWindow {
 private:
     std::string error_buffer = "";
@@ -64,7 +64,29 @@ private:
     bool is_busy = false;
 public:
     // Constructor simply sets UIWindow window_name
-    explicit MathObjectCreatorWindow();
+    explicit MathObjectCreatorWindow(bool start_open);
+
+    // Render function definition
+    void Render() override;
+};
+
+// 
+class MainMenuBar : public UIWindow {
+private:
+    // UI variables
+    std::string error_buffer = "";
+    bool success = false;
+    bool is_busy = false;
+
+public:
+
+    // Event Listeners to be defined in main.cpp
+    std::function<void(void)> EVENT_OnOpenSandboxManager;
+    std::function<void(void)> EVENT_OnOpenMathObjectCreator;
+
+    // Constructor simply sets UIWindow window_name
+    explicit MainMenuBar();
+
     // Render function definition
     void Render() override;
 };

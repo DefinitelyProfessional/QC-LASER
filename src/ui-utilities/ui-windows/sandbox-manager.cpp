@@ -16,8 +16,8 @@
 namespace fs = std::filesystem;
 namespace UI {
 // Constructor implementation
-SandboxManagerWindow::SandboxManagerWindow(const fs::path& data_dir, std::string active_file) : 
-UIWindow(">>> SANDBOX MANAGER"), saved_data_dir(data_dir), active_filename(active_file) {
+SandboxManagerWindow::SandboxManagerWindow(bool start_open, const fs::path& data_dir, std::string active_file) : 
+UIWindow("SANDBOX MANAGER", start_open), saved_data_dir(data_dir), active_filename(active_file) {
     refresh_filenames();
 }
 
@@ -119,10 +119,10 @@ void SandboxManagerWindow::refresh_filenames() {
 void SandboxManagerWindow::Render() {
     // Window settings
     ImGui::SetNextWindowSize(ImVec2(400, 350), ImGuiCond_FirstUseEver);
-    ImGui::SetNextWindowPos(ImVec2(0, 0), ImGuiCond_FirstUseEver);
-    ImGui::Begin(window_name.c_str());
+    ImGui::SetNextWindowPos(ImVec2(0, 20), ImGuiCond_FirstUseEver);
+    ImGui::Begin((">>> "+ window_name).c_str(), &is_open);
 
-    // TOP PANEL Current Active and Create New
+    // [TOP SECTION] Current Active and Create New
     ImGui::Text("Current Active Sandbox : ");
     ImGui::SameLine();
     ImGui::TextColored(ImVec4(1.0f,0.5f,0.0f,1.0f), "%s", active_filename.c_str());
@@ -135,6 +135,9 @@ void SandboxManagerWindow::Render() {
         }
         refresh_filenames();
     }
+    if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal)) {
+        ImGui::SetTooltip("Save the current active sandbox to disk");
+    }
     ImGui::EndDisabled();
     ImGui::Separator();
 
@@ -143,7 +146,8 @@ void SandboxManagerWindow::Render() {
     if (!error_buffer.empty()) {
         ImGui::TextColored(
             (success) ? ImVec4(0.2f,1.0f,0.1f,1.0f) : ImVec4(1.0f,0.0f,0.0f,1.0f), 
-            "%s", error_buffer.c_str());
+            "%s", error_buffer.c_str()
+        );
     }
     // Input box for the new file name
     bool create_text_entered = ImGui::InputTextWithHint(
@@ -160,6 +164,11 @@ void SandboxManagerWindow::Render() {
 
     ImGui::BeginDisabled(!can_submit);
     bool create_button_pressed = ImGui::Button("Create###CreateNewButton");
+    if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal) && ImGui::BeginItemTooltip()) {
+        ImGui::Text("Create a new sandbox file with that name,");
+        ImGui::Text("creating existing files will only open said file");
+        ImGui::EndTooltip();
+    }
     ImGui::EndDisabled();
 
     if (can_submit && (create_text_entered || create_button_pressed)) {
@@ -179,11 +188,12 @@ void SandboxManagerWindow::Render() {
     // TEMPORARY FPS READ
     ImGui::Text("FPS : %.1f", ImGui::GetIO().Framerate);
 
-    // MIDDLE PANEL Selectable File Table and refresh file
-    ImGui::Text("Double-click to select and load file.");
-
+    // [MIDDLE SECTION] Selectable File Table and refresh file
     // Refresh Button aligned above the table
-    if (ImGui::Button("Refresh List###RefreshButton")) {refresh_filenames();}
+    if (ImGui::Button("Refresh###RefreshButton")) {refresh_filenames();}
+    if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal)) {
+        ImGui::SetTooltip("Refresh the sandbox file explorer table");
+    }
 
     // Table as a simple file explorer
     if (ImGui::BeginTable("###SandboxFilesTable", 2, 
@@ -224,6 +234,9 @@ void SandboxManagerWindow::Render() {
                     selected_delete_count += (is_checked) ? 1 : -1;
                 }
                 ImGui::PopID();
+                if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal)) {
+                    ImGui::SetTooltip("Select files to delete");
+                }
 
                 // Column 1: Filename
                 ImGui::TableSetColumnIndex(1);
@@ -244,6 +257,9 @@ void SandboxManagerWindow::Render() {
                     }
                     ImGui::EndDisabled();
                 }
+                if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal)) {
+                    ImGui::SetTooltip("Double click to select and load the file");
+                }
             }
         }
         ImGui::EndTable();
@@ -254,6 +270,9 @@ void SandboxManagerWindow::Render() {
     ImGui::BeginDisabled(selected_delete_count == 0 || is_busy);
     if (ImGui::Button("Delete Selected File(s)###DeleteButton")) {
         ImGui::OpenPopup("Delete Confirmation"); // must match BeginPopupModal
+    }
+    if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal)) {
+        ImGui::SetTooltip("Confirm to delete selected files");
     }
     ImGui::EndDisabled();
 

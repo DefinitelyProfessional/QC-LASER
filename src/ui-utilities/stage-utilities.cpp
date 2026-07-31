@@ -38,7 +38,7 @@ namespace STAGE {
     // Public
     void WindowManager::RenderAll() {
         for (const auto& window : windows_registry) {
-            if (window->IsOpen()) {window->Render();}
+            if (window->is_open) {window->Render();}
         }
     }
 

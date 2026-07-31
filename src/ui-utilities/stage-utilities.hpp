@@ -54,6 +54,7 @@ namespace STAGE {
     //     float zoom = 1.0f;
     //     ImVec2 pan
     // };
+    
     // Encapsulates the complete beginning of the render loop
     void StartRenderLoop();
 

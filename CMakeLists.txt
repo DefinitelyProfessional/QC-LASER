@@ -75,6 +75,7 @@ set(APP_SOURCES
     src/ui-utilities/ui-windows.hpp
     src/ui-utilities/ui-windows/math-object-creator.cpp
     src/ui-utilities/ui-windows/sandbox-manager.cpp
+    src/ui-utilities/ui-windows/main-menu-bar.cpp
     src/ui-utilities/icon-resource.hpp
 )
 
