@@ -92,12 +92,11 @@ int main() {
 
 
     // MAIN MENU BAR handles the visibility of almost all windows
-    UI::MainMenuBar* main_menu_bar = win_manager.RegisterWindow<UI::MainMenuBar>();
-    main_menu_bar->EVENT_OnOpenSandboxManager = [&sandbox_win](){
-        sandbox_win->is_open = !sandbox_win->is_open;};
-    main_menu_bar->EVENT_OnOpenMathObjectCreator = [&math_obj_creator_win](){
-        math_obj_creator_win->is_open = !math_obj_creator_win->is_open;};
-    
+    UI::MainMenuBar* main_menu_bar = win_manager.RegisterWindow<UI::MainMenuBar>(
+        G_threadpool.get(),
+        sandbox_win,
+        math_obj_creator_win
+    );
     
     // CORE IMGUI RENDER LOOP
     while (!glfwWindowShouldClose(host_window)) {

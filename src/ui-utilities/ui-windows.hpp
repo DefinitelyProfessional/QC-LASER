@@ -1,5 +1,8 @@
 #pragma once
 
+// for ThreadPool
+#include "thread-core/thread-pool.hpp"
+
 // for UIWindow 
 #include "ui-utilities/general-ui-utilities.hpp"
 
@@ -56,6 +59,7 @@ public:
     void Render() override;
 };
 
+
 // Manage math objects present in the active sandbox, CRUD basically
 class MathObjectCreatorWindow : public UIWindow {
 private:
@@ -70,22 +74,25 @@ public:
     void Render() override;
 };
 
+
 // 
 class MainMenuBar : public UIWindow {
 private:
     // UI variables
     std::string error_buffer = "";
+    MULTI::ThreadPool* threadpool;
+    SandboxManagerWindow* sandbox_manager_win;
+    MathObjectCreatorWindow* math_obj_creator_win;
     bool success = false;
     bool is_busy = false;
 
 public:
-
-    // Event Listeners to be defined in main.cpp
-    std::function<void(void)> EVENT_OnOpenSandboxManager;
-    std::function<void(void)> EVENT_OnOpenMathObjectCreator;
-
     // Constructor simply sets UIWindow window_name
-    explicit MainMenuBar();
+    explicit MainMenuBar(
+        MULTI::ThreadPool* TP,
+        SandboxManagerWindow* SM,
+        MathObjectCreatorWindow* MO
+    );
 
     // Render function definition
     void Render() override;

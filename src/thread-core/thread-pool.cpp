@@ -1,5 +1,6 @@
 #include "thread-pool.hpp"
 
+#include <atomic>
 #include <functional>
 #include <thread>
 #include <utility>
@@ -41,8 +42,10 @@ ThreadPool::ThreadPool(int thread_count) {
                     task_TODO = std::move(this->tasks_q.front());
                     this->tasks_q.pop();
                 }
-                // EXECUTE THE TASK OUTSIDE THE LOCK
-                task_TODO();
+                active_threads.fetch_add(1, std::memory_order_relaxed);
+                // EXECUTE THE TASK OUTSIDE THE LOCK, try catch to prevent thread shutdown due to errors
+                try {task_TODO();} catch (...){}
+                active_threads.fetch_sub(1, std::memory_order_relaxed);
             }
         });
     }

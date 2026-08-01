@@ -142,13 +142,6 @@ void SandboxManagerWindow::Render() {
     ImGui::Separator();
 
     ImGui::Text("Create New Sandbox :");
-    // Error buffer display
-    if (!error_buffer.empty()) {
-        ImGui::TextColored(
-            (success) ? ImVec4(0.2f,1.0f,0.1f,1.0f) : ImVec4(1.0f,0.0f,0.0f,1.0f), 
-            "%s", error_buffer.c_str()
-        );
-    }
     // Input box for the new file name
     bool create_text_entered = ImGui::InputTextWithHint(
         "###CreateNewInputText",
@@ -182,7 +175,13 @@ void SandboxManagerWindow::Render() {
         // Clear the input box after submission
         new_sandbox_input[0] = '\0';
     }
-
+    // Error buffer display
+    if (!error_buffer.empty()) {
+        ImGui::TextColored(
+            (success) ? ImVec4(0.2f,1.0f,0.1f,1.0f) : ImVec4(1.0f,0.0f,0.0f,1.0f), 
+            "%s", error_buffer.c_str()
+        );
+    }
     ImGui::Separator();
 
     // TEMPORARY FPS READ
