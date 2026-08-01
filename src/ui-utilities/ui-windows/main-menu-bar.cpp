@@ -29,21 +29,40 @@ void MainMenuBar::Render() {
             ImGui::SetTooltip("Manage sandbox files");
         }
 
+        ImGui::MenuItem("MATH OBJECT EXPLORER", nullptr, &math_obj_explorer_win->is_open);
+        if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal)) {
+            ImGui::SetTooltip("Manage existing math objects");
+        }
+
         ImGui::MenuItem("MATH OBJECT CREATOR", nullptr, &math_obj_creator_win->is_open);
         if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal)) {
             ImGui::SetTooltip("Create new math objects");
         }
 
-        ImGui::MenuItem("MATH OBJECT EXPLORER", nullptr, &math_obj_explorer_win->is_open);
-        if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal)) {
-            ImGui::SetTooltip("Manage existing math objects");
+        if (ImGui::MenuItem("close all")) {
+            sandbox_manager_win->is_open = false;
+            math_obj_explorer_win->is_open = false;
+            math_obj_creator_win->is_open = false;
         }
+
+        if (ImGui::MenuItem("open all")) {
+            sandbox_manager_win->is_open = true;
+            math_obj_explorer_win->is_open = true;
+            math_obj_creator_win->is_open = true;
+        }
+
         ImGui::EndMenu();
     }
-
     ImGui::TextColored(
         ImVec4(1.0f,0.5f,0.0f,1.0f),
-        "< %i Threads Active >", threadpool->get_active_threads()
+        "Using %s", sandbox_manager_win->get_active_filename().c_str()
+    );
+
+    sandbox_manager_win->save_current_active_button();
+
+    ImGui::TextColored(
+        ImVec4(0.0f,1.0f,1.0f,1.0f),
+        "   < %i Threads Active >", threadpool->get_active_threads()
     );
 
     ImGui::EndMainMenuBar();

@@ -6,13 +6,13 @@
 namespace UI {
 // Constructor 
 MathObjExplorerWindow::MathObjExplorerWindow(bool start_open) : 
-UIWindow("MATH OBJECT EXPLORER", start_open){}
+UIWindow(">>> MATH OBJECT EXPLORER", start_open){}
 // Public
 void MathObjExplorerWindow::Render(){
     // Window settings
-    ImGui::SetNextWindowSize(ImVec2(370, 350), ImGuiCond_FirstUseEver);
+    ImGui::SetNextWindowSize(ImVec2(370, 330), ImGuiCond_FirstUseEver);
     ImGui::SetNextWindowPos(ImVec2(0, 370), ImGuiCond_FirstUseEver);
-    ImGui::Begin((">>> " + window_name).c_str(), &is_open);
+    ImGui::Begin(window_name.c_str(), &is_open);
     
     // Error buffer display
     if (!error_buffer.empty()) {

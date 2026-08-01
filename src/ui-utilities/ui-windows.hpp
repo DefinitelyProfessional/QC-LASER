@@ -44,7 +44,10 @@ public:
     SandboxManagerWindow(bool start_open,const std::filesystem::path& data_dir, std::string active_file);
 
     // Set the active filename
-    inline void set_active_filename(std::string new_active) {active_filename = new_active;};
+    inline void set_active_filename(const std::string& new_active) {active_filename = new_active;};
+
+    // Set the active filename
+    inline const std::string& get_active_filename() const {return active_filename;};
 
     // Set error buffer for communication
     inline void set_error_buffer(bool status, std::string msg) {success = status; error_buffer = msg;};
@@ -54,6 +57,9 @@ public:
 
     // Refresh filenames and other states and functionalities
     void refresh_filenames();
+
+    // Create the imgui button to save current active sandbox
+    void save_current_active_button();
 
     // Render function definition
     void Render() override;

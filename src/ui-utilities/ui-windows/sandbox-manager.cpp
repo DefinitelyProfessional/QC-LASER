@@ -17,7 +17,7 @@ namespace fs = std::filesystem;
 namespace UI {
 // Constructor implementation
 SandboxManagerWindow::SandboxManagerWindow(bool start_open, const fs::path& data_dir, std::string active_file) : 
-UIWindow("SANDBOX MANAGER", start_open), saved_data_dir(data_dir), active_filename(active_file) {
+UIWindow(">>> SANDBOX MANAGER", start_open), saved_data_dir(data_dir), active_filename(active_file) {
     refresh_filenames();
 }
 
@@ -116,17 +116,7 @@ void SandboxManagerWindow::refresh_filenames() {
 }
 
 // Public
-void SandboxManagerWindow::Render() {
-    // Window settings
-    ImGui::SetNextWindowSize(ImVec2(370, 350), ImGuiCond_FirstUseEver);
-    ImGui::SetNextWindowPos(ImVec2(0, 20), ImGuiCond_FirstUseEver);
-    ImGui::Begin((">>> "+ window_name).c_str(), &is_open);
-
-    // [TOP SECTION] Current Active and Create New
-    ImGui::Text("Current Active Sandbox : ");
-    ImGui::SameLine();
-    ImGui::TextColored(ImVec4(1.0f,0.5f,0.0f,1.0f), "%s", active_filename.c_str());
-    ImGui::SameLine();
+void SandboxManagerWindow::save_current_active_button() {
     ImGui::BeginDisabled(is_busy);
     if (ImGui::Button("Save###CurrentActiveSaveButton")) {
         if (EVENT_OnSaveCurrentSandbox) {
@@ -139,6 +129,23 @@ void SandboxManagerWindow::Render() {
         ImGui::SetTooltip("Save the current active sandbox to disk");
     }
     ImGui::EndDisabled();
+}
+
+// Public
+void SandboxManagerWindow::Render() {
+    // Window settings
+    ImGui::SetNextWindowSize(ImVec2(370, 350), ImGuiCond_FirstUseEver);
+    ImGui::SetNextWindowPos(ImVec2(0, 20), ImGuiCond_FirstUseEver);
+    ImGui::Begin(window_name.c_str(), &is_open);
+
+    // [TOP SECTION] Current Active and Create New
+    ImGui::Text("Current Active Sandbox : ");
+    ImGui::SameLine();
+    ImGui::TextColored(ImVec4(1.0f,0.5f,0.0f,1.0f), "%s", active_filename.c_str());
+    ImGui::SameLine();
+    
+    save_current_active_button();
+
     ImGui::Separator();
 
     ImGui::Text("Create New Sandbox :");

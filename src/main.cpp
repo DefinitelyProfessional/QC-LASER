@@ -106,7 +106,7 @@ int main() {
     while (!glfwWindowShouldClose(host_window)) {
         STAGE::StartRenderLoop();
 
-        ImGui::ShowDemoWindow();
+        // ImGui::ShowDemoWindow();
         // Unified rendering of all window elements
         win_manager.RenderAll();
         G_outputpool->execute_results();

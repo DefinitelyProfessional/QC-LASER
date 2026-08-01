@@ -6,13 +6,13 @@
 namespace UI {
 // Constructor
 MathObjCreatorWindow::MathObjCreatorWindow(bool start_open) :
-UIWindow("MATH OBJECT CREATOR", start_open){}
+UIWindow(">>> MATH OBJECT CREATOR", start_open){}
 // Public
 void MathObjCreatorWindow::Render() {
     // Window settings
-    ImGui::SetNextWindowSize(ImVec2(370, 350), ImGuiCond_FirstUseEver);
-    ImGui::SetNextWindowPos(ImVec2(0, 370), ImGuiCond_FirstUseEver);
-    ImGui::Begin((">>> " + window_name).c_str(), &is_open);
+    ImGui::SetNextWindowSize(ImVec2(370, 300), ImGuiCond_FirstUseEver);
+    ImGui::SetNextWindowPos(ImVec2(0, 700), ImGuiCond_FirstUseEver);
+    ImGui::Begin(window_name.c_str(), &is_open);
 
     // +++ RealVector
     if (ImGui::CollapsingHeader("+ Create RealVector")) {
