@@ -60,15 +60,30 @@ public:
 };
 
 
-// Manage math objects present in the active sandbox, CRUD basically
-class MathObjectCreatorWindow : public UIWindow {
+// Accept input as entries to create new math objects
+class MathObjCreatorWindow : public UIWindow {
 private:
     std::string error_buffer = "";
     bool success = false;
     bool is_busy = false;
 public:
     // Constructor simply sets UIWindow window_name
-    explicit MathObjectCreatorWindow(bool start_open);
+    explicit MathObjCreatorWindow(bool start_open);
+
+    // Render function definition
+    void Render() override;
+};
+
+
+// Manage math objects present in the active sandbox, basically CRUD
+class MathObjExplorerWindow : public UIWindow {
+private:
+    std::string error_buffer = "";
+    bool success = false;
+    bool is_busy = false;
+public:
+    // Constructor simply sets UIWindow window_name
+    explicit MathObjExplorerWindow(bool start_open);
 
     // Render function definition
     void Render() override;
@@ -82,7 +97,8 @@ private:
     std::string error_buffer = "";
     MULTI::ThreadPool* threadpool;
     SandboxManagerWindow* sandbox_manager_win;
-    MathObjectCreatorWindow* math_obj_creator_win;
+    MathObjCreatorWindow* math_obj_creator_win;
+    MathObjExplorerWindow* math_obj_explorer_win;
     bool success = false;
     bool is_busy = false;
 
@@ -91,7 +107,8 @@ public:
     explicit MainMenuBar(
         MULTI::ThreadPool* TP,
         SandboxManagerWindow* SM,
-        MathObjectCreatorWindow* MO
+        MathObjCreatorWindow* MC,
+        MathObjExplorerWindow* ME
     );
 
     // Render function definition

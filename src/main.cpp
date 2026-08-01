@@ -87,17 +87,21 @@ int main() {
 
 
     // MATH OBJECT CREATOR WINDOW handles creation of every math object, get input for entries and registering it
-    UI::MathObjectCreatorWindow* math_obj_creator_win = win_manager.RegisterWindow<UI::MathObjectCreatorWindow>(false);
-    math_obj_creator_win->is_open = false;
+    UI::MathObjCreatorWindow* math_obj_creator_win = win_manager.RegisterWindow<UI::MathObjCreatorWindow>(true);
+    math_obj_creator_win->is_open = true;
 
+    UI::MathObjExplorerWindow* math_obj_explorer_win = win_manager.RegisterWindow<UI::MathObjExplorerWindow>(true);
+    math_obj_explorer_win->is_open = true;
 
     // MAIN MENU BAR handles the visibility of almost all windows
     UI::MainMenuBar* main_menu_bar = win_manager.RegisterWindow<UI::MainMenuBar>(
         G_threadpool.get(),
         sandbox_win,
-        math_obj_creator_win
-    );
+        math_obj_creator_win,
+        math_obj_explorer_win
+    ); main_menu_bar->is_open = true;
     
+
     // CORE IMGUI RENDER LOOP
     while (!glfwWindowShouldClose(host_window)) {
         STAGE::StartRenderLoop();

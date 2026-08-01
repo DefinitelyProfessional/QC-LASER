@@ -118,7 +118,7 @@ void SandboxManagerWindow::refresh_filenames() {
 // Public
 void SandboxManagerWindow::Render() {
     // Window settings
-    ImGui::SetNextWindowSize(ImVec2(400, 350), ImGuiCond_FirstUseEver);
+    ImGui::SetNextWindowSize(ImVec2(370, 350), ImGuiCond_FirstUseEver);
     ImGui::SetNextWindowPos(ImVec2(0, 20), ImGuiCond_FirstUseEver);
     ImGui::Begin((">>> "+ window_name).c_str(), &is_open);
 

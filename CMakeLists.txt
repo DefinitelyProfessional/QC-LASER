@@ -73,6 +73,7 @@ set(APP_SOURCES
     src/ui-utilities/stage-utilities.hpp
     src/ui-utilities/stage-utilities.cpp
     src/ui-utilities/ui-windows.hpp
+    src/ui-utilities/ui-windows/math-object-explorer.cpp
     src/ui-utilities/ui-windows/math-object-creator.cpp
     src/ui-utilities/ui-windows/sandbox-manager.cpp
     src/ui-utilities/ui-windows/main-menu-bar.cpp
