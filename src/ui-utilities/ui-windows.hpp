@@ -8,6 +8,7 @@
 
 #include <filesystem>
 #include <functional>
+#include <cstdint>
 #include <vector>
 #include <string>
 
@@ -18,15 +19,12 @@ private:
     // File variables
     const std::filesystem::path& saved_data_dir;
     std::string active_filename;
-    std::string error_buffer = "";
     std::vector<std::string> db_filenames;
     std::vector<bool> selected_delete;
     int selected_delete_count = 0; 
     int selected_index = -1;
     int db_filenames_size;
     char new_sandbox_input[64] = "";
-    bool success = false;
-    bool is_busy = false;
     
     // Validate new sandbox filename
     bool is_valid_new_filename(std::string& filename);
@@ -49,12 +47,6 @@ public:
     // Set the active filename
     inline const std::string& get_active_filename() const {return active_filename;};
 
-    // Set error buffer for communication
-    inline void set_error_buffer(bool status, std::string msg) {success = status; error_buffer = msg;};
-
-    // Reset the busy status to false
-    inline void reset_busy_status() {is_busy = false;};
-
     // Refresh filenames and other states and functionalities
     void refresh_filenames();
 
@@ -69,9 +61,10 @@ public:
 // Accept input as entries to create new math objects
 class MathObjCreatorWindow : public UIWindow {
 private:
-    std::string error_buffer = "";
-    bool success = false;
-    bool is_busy = false;
+    uint32_t vector_dim_buffer = 2;
+    uint32_t matrix_row_buffer = 2;
+    uint32_t matrix_col_buffer = 2;
+
 public:
     // Constructor simply sets UIWindow window_name
     explicit MathObjCreatorWindow(bool start_open);
@@ -84,9 +77,6 @@ public:
 // Manage math objects present in the active sandbox, basically CRUD
 class MathObjExplorerWindow : public UIWindow {
 private:
-    std::string error_buffer = "";
-    bool success = false;
-    bool is_busy = false;
 public:
     // Constructor simply sets UIWindow window_name
     explicit MathObjExplorerWindow(bool start_open);
@@ -100,13 +90,10 @@ public:
 class MainMenuBar : public UIWindow {
 private:
     // UI variables
-    std::string error_buffer = "";
     MULTI::ThreadPool* threadpool;
     SandboxManagerWindow* sandbox_manager_win;
     MathObjCreatorWindow* math_obj_creator_win;
     MathObjExplorerWindow* math_obj_explorer_win;
-    bool success = false;
-    bool is_busy = false;
 
 public:
     // Constructor simply sets UIWindow window_name

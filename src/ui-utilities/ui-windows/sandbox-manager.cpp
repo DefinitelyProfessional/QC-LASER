@@ -69,7 +69,7 @@ void SandboxManagerWindow::execute_delete_to_trash() {
             target_paths.push_back(full_path.wstring());
         }
     }
-    if (target_paths.empty()) return;
+    if (target_paths.empty()) {return;}
 
     // SHFileOperationW requires a double-null-terminated sequence of strings
     // Win32 API do get quirky, SHFILEOPSTRUCTW designed est Windows 95
@@ -121,7 +121,7 @@ void SandboxManagerWindow::save_current_active_button() {
     if (ImGui::Button("Save###CurrentActiveSaveButton")) {
         if (EVENT_OnSaveCurrentSandbox) {
             EVENT_OnSaveCurrentSandbox();
-            is_busy = true; // Main will reset this
+            status_is_busy(); // Main will reset this
         }
         refresh_filenames();
     }
@@ -163,7 +163,7 @@ void SandboxManagerWindow::Render() {
     bool can_submit = (new_sandbox_input[0] != '\0' && !is_busy);
 
     ImGui::BeginDisabled(!can_submit);
-    bool create_button_pressed = ImGui::Button("Create###CreateNewButton");
+    bool create_button_pressed = ImGui::Button("Create###CreateNewSandboxButton");
     if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal) && ImGui::BeginItemTooltip()) {
         ImGui::Text("Create a new sandbox file with that name,");
         ImGui::Text("creating existing files will only open said file");
@@ -176,19 +176,15 @@ void SandboxManagerWindow::Render() {
         if (is_valid_new_filename(filename)) {
             if (EVENT_OnCreateSandbox) {
                 EVENT_OnCreateSandbox(filename);
-                is_busy = true; // Main will reset this
+                status_is_busy(); // Main will reset this
             }
         }
         // Clear the input box after submission
         new_sandbox_input[0] = '\0';
     }
-    // Error buffer display
-    if (!error_buffer.empty()) {
-        ImGui::TextColored(
-            (success) ? ImVec4(0.2f,1.0f,0.1f,1.0f) : ImVec4(1.0f,0.0f,0.0f,1.0f), 
-            "%s", error_buffer.c_str()
-        );
-    }
+    
+    display_error_buffer();
+
     ImGui::Separator();
 
     // TEMPORARY FPS READ
@@ -259,7 +255,7 @@ void SandboxManagerWindow::Render() {
                     selected_index = i;
                     if (EVENT_OnSelectSandbox) {
                         EVENT_OnSelectSandbox(db_filenames[selected_index]);
-                        is_busy = true; // Main will reset this
+                        status_is_busy(); // Main will reset this
                     }
                     ImGui::EndDisabled();
                 }

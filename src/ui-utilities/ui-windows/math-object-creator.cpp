@@ -19,11 +19,29 @@ void MathObjCreatorWindow::Render() {
         ImGui::Indent();
         ImGui::Text("Vectors with REAL number entries.");
 
-        // Error buffer display
-        if (!error_buffer.empty()) {
-            ImGui::TextColored(
-                (success) ? ImVec4(0.2f,1.0f,0.1f,1.0f) : ImVec4(1.0f,0.0f,0.0f,1.0f), 
-                "%s", error_buffer.c_str());
+        display_error_buffer();
+        
+        // Input box for the vector's dimensions
+        ImGui::Text("Enter vector dimension : ");
+        
+        bool create_input_entered = ImGui::InputScalar(
+            "###SetDimInputText",
+            ImGuiDataType_U32,
+            &vector_dim_buffer
+        );
+
+        ImGui::BeginDisabled(is_busy);
+        bool create_button_pressed = ImGui::Button("Create###CreateNewRealVectorButton");
+        ImGui::EndDisabled();
+
+        if (!is_busy && (create_input_entered || create_button_pressed)) {
+            if (vector_dim_buffer < 2 || vector_dim_buffer > 50) {
+                set_error_buffer(false, "Manual input only supports from 2 up to 50 entries");
+                vector_dim_buffer = 2;
+            } else {
+                //
+                set_error_buffer(true, "We got it good.");
+            }
         }
 
         ImGui::Unindent();
@@ -35,12 +53,7 @@ void MathObjCreatorWindow::Render() {
         ImGui::Indent();
         ImGui::Text("Vectors with COMPLEX number entries.");
 
-        // Error buffer display
-        if (!error_buffer.empty()) {
-            ImGui::TextColored(
-                (success) ? ImVec4(0.2f,1.0f,0.1f,1.0f) : ImVec4(1.0f,0.0f,0.0f,1.0f), 
-                "%s", error_buffer.c_str());
-        }
+        display_error_buffer();
 
         ImGui::Unindent();
         ImGui::Separator();
@@ -51,12 +64,7 @@ void MathObjCreatorWindow::Render() {
         ImGui::Indent();
         ImGui::Text("Matrices with REAL number entries.");
 
-        // Error buffer display
-        if (!error_buffer.empty()) {
-            ImGui::TextColored(
-                (success) ? ImVec4(0.2f,1.0f,0.1f,1.0f) : ImVec4(1.0f,0.0f,0.0f,1.0f), 
-                "%s", error_buffer.c_str());
-        }
+        display_error_buffer();
 
         ImGui::Unindent();
         ImGui::Separator();
@@ -67,12 +75,7 @@ void MathObjCreatorWindow::Render() {
         ImGui::Indent();
         ImGui::Text("Matrices with COMPLEX number entries.");
 
-        // Error buffer display
-        if (!error_buffer.empty()) {
-            ImGui::TextColored(
-                (success) ? ImVec4(0.2f,1.0f,0.1f,1.0f) : ImVec4(1.0f,0.0f,0.0f,1.0f), 
-                "%s", error_buffer.c_str());
-        }
+        display_error_buffer();
 
         ImGui::Unindent();
         ImGui::Separator();

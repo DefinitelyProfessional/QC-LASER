@@ -63,7 +63,7 @@ int main() {
             G_outputpool->enqueue([&active_sandbox, &sandbox_win, result = std::move(status)]() {
                 sandbox_win->set_error_buffer(result.success, result.msg);
                 if (result.success) {sandbox_win->set_active_filename(active_sandbox.get_active_filename());}
-                sandbox_win->reset_busy_status();
+                sandbox_win->status_not_busy();
                 glfwPostEmptyEvent(); // Wake up Main Thread to process UI changes
             });
         });
@@ -77,9 +77,9 @@ int main() {
             StatusPayload status = active_sandbox.save_whole_sandbox();
 
             G_outputpool->enqueue([&sandbox_win, result = std::move(status)]{
+                if (result.success) {sandbox_win->refresh_filenames();}
                 sandbox_win->set_error_buffer(result.success, result.msg);
-                sandbox_win->reset_busy_status();
-                sandbox_win->refresh_filenames();
+                sandbox_win->status_not_busy();
                 glfwPostEmptyEvent(); // Wake up Main Thread to process UI changes
             });
         });

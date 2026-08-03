@@ -14,12 +14,7 @@ void MathObjExplorerWindow::Render(){
     ImGui::SetNextWindowPos(ImVec2(0, 370), ImGuiCond_FirstUseEver);
     ImGui::Begin(window_name.c_str(), &is_open);
     
-    // Error buffer display
-    if (!error_buffer.empty()) {
-        ImGui::TextColored(
-            (success) ? ImVec4(0.2f,1.0f,0.1f,1.0f) : ImVec4(1.0f,0.0f,0.0f,1.0f), 
-            "%s", error_buffer.c_str());
-    }
+    display_error_buffer();
 
     ImGui::End();
 }
