@@ -28,36 +28,40 @@ struct RealVector {
     std::vector<double> v_data;
 
     // Constructors
-    // RealVector() = default; // Trivial default constructor Inlined
+    // Only pass dim, all entries default to 0.0, best for manual input
     explicit RealVector(uint32_t dim);
-    RealVector(uint32_t dim, std::vector<double> input_data);
+    // Only pass the vector data, moves mem ownership into this object
+    explicit RealVector(std::vector<double> input_data);
 
     // Accessors inlined directly in header for zero function-call overhead
-    inline double& operator()(uint32_t i) { return v_data[i]; }
-    inline const double& operator()(uint32_t i) const { return v_data[i]; }
+    inline double& operator()(uint32_t i) {return v_data[i];}
+    inline const double& operator()(uint32_t i) const {return v_data[i];}
 
     // Zero-copy raw pointer exposure for the UI buffer
-    inline double* raw_buffer() { return v_data.data(); }
-    inline const double* raw_buffer() const { return v_data.data(); }
+    inline double* raw_buffer() {return v_data.data();}
+    inline const double* raw_buffer() const {return v_data.data();}
 };
+
 
 // Versatile simple complex number Vector. ComplexVector(dim, data)
 struct ComplexVector {
     std::vector<std::complex<double>> v_data;
 
     // Constructors
-    // ComplexVector() = default; // Trivial default constructor Inlined
+    // Only pass dim, all entries default to {0.0,0.0}, best for manual input
     explicit ComplexVector(uint32_t dim);
-    ComplexVector(uint32_t dim, std::vector<std::complex<double>> input_data);
+    // Only pass the vector data, moves mem ownership into this object
+    explicit ComplexVector(std::vector<std::complex<double>> input_data);
 
     // Accessors inlined directly in header for zero function-call overhead
-    inline std::complex<double>& operator()(uint32_t i) { return v_data[i]; }
-    inline const std::complex<double>& operator()(uint32_t i) const { return v_data[i]; }
+    inline std::complex<double>& operator()(uint32_t i) {return v_data[i];}
+    inline const std::complex<double>& operator()(uint32_t i) const {return v_data[i];}
 
     // Zero-copy raw pointer exposure for the UI buffer
-    inline std::complex<double>* raw_buffer() { return v_data.data(); }
-    inline const std::complex<double>* raw_buffer() const { return v_data.data(); }
+    inline std::complex<double>* raw_buffer() {return v_data.data();}
+    inline const std::complex<double>* raw_buffer() const {return v_data.data();}
 };
+
 
 // Versatile simple real number Matrix. RealMatrix(rows, cols, data)
 struct RealMatrix {
@@ -66,18 +70,21 @@ struct RealMatrix {
     std::vector<double> m_data;
 
     // Constructors
-    // RealMatrix() = default; // Trivial default constructor (Inlined)
+    // Only pass rows x cols, all entries default to 0.0, best for manual input
     RealMatrix(uint32_t rows, uint32_t cols);
+    // Only pass the vector data, moves mem ownership into this object
     RealMatrix(uint32_t rows, uint32_t cols, std::vector<double> input_data);
 
     // Accessors inlined directly in header for zero function-call overhead
-    inline double& operator()(uint32_t i, uint32_t j) { return m_data[i * m_cols + j]; }
-    inline const double& operator()(uint32_t i, uint32_t j) const { return m_data[i * m_cols + j]; }
+    inline double& operator()(uint32_t i, uint32_t j) {return m_data[i * m_cols + j];}
+    inline const double& operator()(uint32_t i, uint32_t j) const {return m_data[i * m_cols + j];}
 
     // Zero-copy raw pointer exposure for the UI buffer
     inline double* raw_buffer() {return m_data.data();}
     inline const double* raw_buffer() const {return m_data.data();}
 };
+
+
 // Versatile simple complex number Matrix. ComplexMatrix(rows, cols, data)
 struct ComplexMatrix {
     uint32_t m_rows{0};
@@ -90,12 +97,12 @@ struct ComplexMatrix {
     ComplexMatrix(uint32_t rows, uint32_t cols, std::vector<std::complex<double>> input_data);
 
     // Accessors inlined directly in header for zero function-call overhead
-    inline std::complex<double>& operator()(uint32_t i, uint32_t j) { return m_data[i * m_cols + j]; }
-    inline const std::complex<double>& operator()(uint32_t i, uint32_t j) const { return m_data[i * m_cols + j]; }
+    inline std::complex<double>& operator()(uint32_t i, uint32_t j) {return m_data[i * m_cols + j];}
+    inline const std::complex<double>& operator()(uint32_t i, uint32_t j) const {return m_data[i * m_cols + j];}
 
     // Zero-copy raw pointer exposure for the UI buffer
-    inline std::complex<double>* raw_buffer() { return m_data.data(); }
-    inline const std::complex<double>* raw_buffer() const { return m_data.data(); }
+    inline std::complex<double>* raw_buffer() {return m_data.data();}
+    inline const std::complex<double>* raw_buffer() const {return m_data.data();}
 };
 
 // For templates

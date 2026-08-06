@@ -38,8 +38,7 @@ int main() {
 
 
     // IMGUI UI SUBSYSTEMS INITIALIZATION
-    GLFWwindow* host_window = STAGE::InitializeUI(
-        1500, 1000, "QC Linear Algebra Sandbox Engine R.", ROOT_DIR);
+    GLFWwindow* host_window = STAGE::InitializeUI(1500, 1000, "QC Linear Algebra Sandbox Engine R.", ROOT_DIR);
     if (!host_window) {std::cerr << "Fatal Error: Failed to initialize application stages."; return -1;}
     ImVec4 clear_color = ImVec4(0.12f, 0.12f, 0.14f, 1.00f);
 

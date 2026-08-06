@@ -1,5 +1,7 @@
 #include "ui-utilities/ui-windows.hpp"
 #include "ui-utilities/general-ui-utilities.hpp"
+#include "ui-utilities/ui-windows/math-object-creator/subwin/real-vector-subwin.cpp"
+
 
 #include "imgui.h"
 
@@ -14,6 +16,7 @@ void MathObjCreatorWindow::Render() {
     ImGui::SetNextWindowPos(ImVec2(0, 700), ImGuiCond_FirstUseEver);
     ImGui::Begin(window_name.c_str(), &is_open);
 
+
     // +++ RealVector
     if (ImGui::CollapsingHeader("+ Create RealVector")) {
         ImGui::Indent();
@@ -23,13 +26,12 @@ void MathObjCreatorWindow::Render() {
         
         // Input box for the vector's dimensions
         ImGui::Text("Enter vector dimension : ");
-        
         bool create_input_entered = ImGui::InputScalar(
             "###SetDimInputText",
             ImGuiDataType_U32,
             &vector_dim_buffer
         );
-
+        ImGui::SameLine();
         ImGui::BeginDisabled(is_busy);
         bool create_button_pressed = ImGui::Button("Create###CreateNewRealVectorButton");
         ImGui::EndDisabled();
@@ -48,6 +50,7 @@ void MathObjCreatorWindow::Render() {
         ImGui::Separator();
     }
 
+
     // +++ ComplexVector
     if (ImGui::CollapsingHeader("+ Create ComplexVector")) {
         ImGui::Indent();
@@ -58,6 +61,7 @@ void MathObjCreatorWindow::Render() {
         ImGui::Unindent();
         ImGui::Separator();
     }
+
 
     // +++ RealMatrix
     if (ImGui::CollapsingHeader("+ Create RealMatrix")) {
@@ -70,6 +74,7 @@ void MathObjCreatorWindow::Render() {
         ImGui::Separator();
     }
 
+
     // +++ ComplexMatrix
     if (ImGui::CollapsingHeader("+ Create ComplexMatrix")) {
         ImGui::Indent();
@@ -81,6 +86,7 @@ void MathObjCreatorWindow::Render() {
         ImGui::Separator();
     }
 
+    
     ImGui::End();
 }
 }

@@ -14,7 +14,7 @@
 #include <H5Group.h>
 #include <H5File.h>
 
-#include <boost/unordered/unordered_flat_map.hpp> // IWYU pragma: export
+#include <boost/unordered/unordered_flat_map.hpp> 
 #include <shared_mutex>
 #include <filesystem>
 #include <exception>
@@ -54,19 +54,19 @@ StatusPayload SandboxDataManager::load_whole_sandbox_internal() {
         // Open with read-only access
         H5::H5File file(s_filepath.string(), H5F_ACC_RDONLY);
 
-        // Open all groups
+        // Open all groups [!!! SCALABLE !!!]
         H5::Group real_vec_group = file.openGroup("/RealVector");
         H5::Group complex_vec_group = file.openGroup("/ComplexVector");
         H5::Group real_mat_group = file.openGroup("/RealMatrix");
         H5::Group complex_mat_group = file.openGroup("/ComplexMatrix");
 
-        // Count number of math objects in each datasets
+        // Count number of math objects in each datasets [!!! SCALABLE !!!]
         hsize_t rv_count = real_vec_group.getNumObjs();
         hsize_t cv_count = complex_vec_group.getNumObjs();
         hsize_t rm_count = real_mat_group.getNumObjs();
         hsize_t cm_count = complex_mat_group.getNumObjs();
         hsize_t total_count = rv_count + cv_count + rm_count + cm_count;
-        // Reserve memory in heap with extra room for anticipating new data
+        // Reserve memory in heap with extra room for anticipating new data [!!! SCALABLE !!!]
         std::get<0>(obj_pool).reserve(rv_count + extra_reserves);
         std::get<1>(obj_pool).reserve(cv_count + extra_reserves);
         std::get<2>(obj_pool).reserve(rm_count + extra_reserves);
@@ -75,14 +75,14 @@ StatusPayload SandboxDataManager::load_whole_sandbox_internal() {
         sandbox_registry.reserve(total_count + extra_reserves);
 
         // Handle adding math objects to the registry
-        auto populate_registry = [&](const std::string& key, auto obj, MathObjType type, auto& target_pool) {
+        auto populate_registry = [this](const std::string& key, auto obj, MathObjType type, auto& target_pool) {
             uint64_t hash = get_hash_key(key);
             uint32_t obj_index = target_pool.size();
             uint32_t key_index = key_str_pool.size();
             
             target_pool.push_back({hash, std::move(obj)});
             key_str_pool.push_back(key);
-            sandbox_registry[hash] = {obj_index, key_index, type};
+            sandbox_registry[hash] = {key_index, obj_index,  type};
         };
 
         // Extract RealVectors
@@ -143,6 +143,8 @@ StatusPayload SandboxDataManager::load_whole_sandbox_internal() {
         }
 
         file.close();
+
+
     // Handle HDF5 specific failures
     } catch (const H5::Exception& errH5) {
         std::string err_msg = errH5.getDetailMsg();
@@ -165,6 +167,7 @@ StatusPayload SandboxDataManager::load_whole_sandbox_internal() {
         return {"Standard Exception during save : " + std::string(err.what()), false};
     }
 
+    
     std::cout << "[SANDBOX] Successfully loaded sandbox from : " << active_filename << "\n";
     return {"Successfully loaded " + active_filename, true};
 }

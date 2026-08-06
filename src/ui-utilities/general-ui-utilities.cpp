@@ -7,6 +7,7 @@
 // Constructor and Destructor definition to reduce vtable lookup
 UIWindow::UIWindow(const std::string& name, bool startOpen) : window_name(name), is_open(startOpen) {}
 UIWindow::~UIWindow() = default;
+
 void UIWindow::display_error_buffer() {
     if (!error_buffer.empty()) {
         ImGui::TextColored(

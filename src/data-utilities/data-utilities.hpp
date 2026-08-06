@@ -3,7 +3,7 @@
 #include "data-utilities/data-payload.hpp"
 #include "math-core/math-objects.hpp"
 
-#include <boost/unordered/unordered_flat_map.hpp> // IWYU pragma: export
+#include <boost/unordered/unordered_flat_map.hpp> 
 #include <shared_mutex>
 // #include <type_traits>
 #include <string_view>
@@ -27,8 +27,8 @@ class SandboxDataManager {
 private:
     // Registry handle
     struct MathObjMap {
-        uint32_t obj_index;
         uint32_t key_index;
+        uint32_t obj_index;
         MathObjType type;
     };
     // Encapsulate obj_data and hash_key to sync with registry
@@ -43,9 +43,10 @@ private:
         std::vector<ObjEntry<RealMatrix>>,
         std::vector<ObjEntry<ComplexMatrix>>
     > ObjPool; ObjPool obj_pool;
-
+    
+    std::vector<std::string> key_str_pool; // Display for user
+    // Maps hashed key_strings to the location of the object in their pool
     boost::unordered_flat_map<uint64_t, MathObjMap> sandbox_registry;
-    std::vector<std::string> key_str_pool; // display for user
     
     // File variables
     std::filesystem::path saved_data_dir;
@@ -67,6 +68,7 @@ private:
         else {static_assert(always_false_v<T>, "Unsupported math object type.");}
     }
 
+
     // To help alongside swap_pop [!!!SCALABLE!!!]
     template<typename T> void exe_with_pool(MathObjType type, T&& func_name) {
         // std::forward<T>(func_name) is the forwarded lambda function
@@ -83,7 +85,8 @@ private:
         }
     }
 
-    // Compile-time routing : helper to manage delete objects from their pools
+
+    // Helper to manage delete objects from their pools
     template<typename T> void swap_pop(std::vector<ObjEntry<T>>& obj_pool, uint32_t selected_obj_idx, uint32_t selected_key_idx) {
         size_t last_obj_idx = obj_pool.size() - 1;
         size_t last_key_idx = key_str_pool.size() - 1;
@@ -165,9 +168,10 @@ public:
         key_str_pool.push_back(std::string(key));
 
         // Register to sandbox_registry
-        sandbox_registry[hash] = {obj_index, key_index, type};
+        sandbox_registry[hash] = {key_index, obj_index,  type};
         return {"Added " + std::string(key), true};
     }
+
 
     // Get a hard copy of the object, registry keeps its original object untouched
     template<typename T> DataPayload<T> get_copy(std::string_view key) {
@@ -190,6 +194,7 @@ public:
         // Return hard copy, registry keeps the original
         return {get_pool<T>()[it->second.obj_index].obj_data, "Copied " + std::string(key), true};
     }
+
 
     // Move the object out of the registry without copy, registry no longer has the object
     template<typename T> DataPayload<T> get_move(std::string_view key) {
