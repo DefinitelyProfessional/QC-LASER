@@ -3,7 +3,7 @@
 #include "data-utilities/HDF5-utilities/hdf5-utilities.hpp"
 #include "data-utilities/data-utilities.hpp"
 #include "data-utilities/data-payload.hpp"
-#include "math-core/math-objects.hpp"
+// #include "math-core/math-objects.hpp"
 
 #include <H5Exception.h>
 #include <H5CompType.h>
@@ -48,7 +48,7 @@ StatusPayload SandboxDataManager::load_whole_sandbox_internal() {
     // Aggresive memory clearing to make room for loading new data
     sandbox_registry = boost::unordered_flat_map<uint64_t, MathObjMap>();
     key_str_pool = std::vector<std::string>();
-    obj_pool = ObjPool{};
+    obj_pool = MathObjPool{};
 
     try {
         // Open with read-only access
@@ -75,14 +75,14 @@ StatusPayload SandboxDataManager::load_whole_sandbox_internal() {
         sandbox_registry.reserve(total_count + extra_reserves);
 
         // Handle adding math objects to the registry
-        auto populate_registry = [this](const std::string& key, auto obj, MathObjType type, auto& target_pool) {
+        auto populate_registry = [this](const std::string& key, auto obj, uint8_t type, auto& target_pool) {
             uint64_t hash = get_hash_key(key);
             uint32_t obj_index = target_pool.size();
             uint32_t key_index = key_str_pool.size();
             
             target_pool.push_back({hash, std::move(obj)});
             key_str_pool.push_back(key);
-            sandbox_registry[hash] = {key_index, obj_index,  type};
+            sandbox_registry[hash] = {key_index, obj_index, type};
         };
 
         // Extract RealVectors
@@ -96,7 +96,7 @@ StatusPayload SandboxDataManager::load_whole_sandbox_internal() {
             
             // Read binary payload and inject into registry
             dset.read(vec.raw_buffer(), H5::PredType::NATIVE_DOUBLE);
-            populate_registry(key, std::move(vec), MathObjType::RealVector, std::get<0>(obj_pool));
+            populate_registry(key, std::move(vec), 0, std::get<0>(obj_pool));
         }
 
         // Extract ComplexVectors
@@ -109,7 +109,7 @@ StatusPayload SandboxDataManager::load_whole_sandbox_internal() {
             ComplexVector vec(elements);
             
             dset.read(vec.raw_buffer(), complex_type);
-            populate_registry(key, std::move(vec), MathObjType::ComplexVector, std::get<1>(obj_pool));
+            populate_registry(key, std::move(vec), 1, std::get<1>(obj_pool));
         }
 
         // Extract RealMatrices
@@ -125,7 +125,7 @@ StatusPayload SandboxDataManager::load_whole_sandbox_internal() {
             // Construct matrix and pull dset
             RealMatrix mat(rows, cols);
             dset.read(mat.raw_buffer(), H5::PredType::NATIVE_DOUBLE);
-            populate_registry(key, std::move(mat), MathObjType::RealMatrix, std::get<2>(obj_pool));
+            populate_registry(key, std::move(mat), 2, std::get<2>(obj_pool));
         }
 
         // Extract ComplexMatrices
@@ -139,7 +139,7 @@ StatusPayload SandboxDataManager::load_whole_sandbox_internal() {
             
             ComplexMatrix mat(rows, cols);
             dset.read(mat.raw_buffer(), complex_type);
-            populate_registry(key, std::move(mat), MathObjType::ComplexMatrix, std::get<3>(obj_pool));
+            populate_registry(key, std::move(mat), 3, std::get<3>(obj_pool));
         }
 
         file.close();
@@ -152,7 +152,7 @@ StatusPayload SandboxDataManager::load_whole_sandbox_internal() {
         // Critical Fallback
         sandbox_registry.clear();
         key_str_pool.clear();
-        obj_pool = ObjPool{};
+        obj_pool = MathObjPool{};
         
         std::cout << "[SANDBOX] HDF5 Load Failed: " << err_msg << "\n";
         return {"HDF5 Load Failed : " + err_msg, false};
@@ -161,7 +161,7 @@ StatusPayload SandboxDataManager::load_whole_sandbox_internal() {
         // Critical Fallback
         sandbox_registry.clear();
         key_str_pool.clear();
-        obj_pool = ObjPool{};
+        obj_pool = MathObjPool{};
         
         std::cout << "[SANDBOX] Standard Exception Failed: " << err.what() << "\n";
         return {"Standard Exception during save : " + std::string(err.what()), false};

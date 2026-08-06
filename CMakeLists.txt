@@ -78,6 +78,7 @@ set(APP_SOURCES
     src/ui-utilities/ui-windows/math-object-creator/subwin/complex-matrix-subwin.cpp
     src/ui-utilities/ui-windows/math-object-creator/subwin/real-vector-subwin.cpp
     src/ui-utilities/ui-windows/math-object-creator/subwin/real-matrix-subwin.cpp
+    src/ui-utilities/ui-windows/math-object-explorer.cpp
     src/ui-utilities/ui-windows/sandbox-manager.cpp
     src/ui-utilities/ui-windows/main-menu-bar.cpp
     src/ui-utilities/icon-resource.hpp

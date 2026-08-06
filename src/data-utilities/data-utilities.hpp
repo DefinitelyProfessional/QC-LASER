@@ -5,7 +5,6 @@
 
 #include <boost/unordered/unordered_flat_map.hpp> 
 #include <shared_mutex>
-// #include <type_traits>
 #include <string_view>
 #include <filesystem>
 #include <functional>
@@ -18,9 +17,6 @@
 #include <tuple>
 #include <mutex>
 
-// Helper for static_assert in template branches
-template<class> static inline constexpr bool always_false_v = false;
-
 namespace DATA {
 // Manage Loading & Storing the Sandbox registry
 class SandboxDataManager {
@@ -29,7 +25,7 @@ private:
     struct MathObjMap {
         uint32_t key_index;
         uint32_t obj_index;
-        MathObjType type;
+        uint8_t type;
     };
     // Encapsulate obj_data and hash_key to sync with registry
     template<typename T> struct ObjEntry {
@@ -37,16 +33,34 @@ private:
         T obj_data;
     };
 
-    typedef std::tuple< // [!!!SCALABLE!!!]
-        std::vector<ObjEntry<RealVector>>,
-        std::vector<ObjEntry<ComplexVector>>,
-        std::vector<ObjEntry<RealMatrix>>,
-        std::vector<ObjEntry<ComplexMatrix>>
-    > ObjPool; ObjPool obj_pool;
+    // REGISTER MATH OBJECTS HERE 
+    template<typename ...Ts> 
+    using TuplePool = std::tuple<std::vector<ObjEntry<Ts>>...>;
+    using MathObjPool = TuplePool< // [!!!SCALABLE!!!]
+        RealVector,
+        ComplexVector,
+        RealMatrix,
+        ComplexMatrix
+    >; 
     
-    std::vector<std::string> key_str_pool; // Display for user
+    template<typename T, typename Tuple> struct TupleIdx;
+
+    template<typename T, typename ...Types>
+    struct TupleIdx<T, std::tuple<T, Types...>> {
+        static constexpr std::uint8_t idx = 0;
+    };
+
+    template<typename T, typename U, typename ...Types>
+    struct TupleIdx<T, std::tuple<U, Types...>> {
+        static constexpr std::uint8_t idx = 1 + 
+        TupleIdx<T, std::tuple<Types...>>::idx;
+    };
+
+
     // Maps hashed key_strings to the location of the object in their pool
     boost::unordered_flat_map<uint64_t, MathObjMap> sandbox_registry;
+    std::vector<std::string> key_str_pool; // Seperated for display for user
+    MathObjPool obj_pool;
     
     // File variables
     std::filesystem::path saved_data_dir;
@@ -54,34 +68,30 @@ private:
     // Read/Write locks for multithreading
     mutable std::shared_mutex sandbox_lock;
 
+
     // Compile-time routing : return corresponding data pool
     template<typename T> constexpr inline auto& get_pool() {
         return std::get<std::vector<ObjEntry<T>>>(obj_pool);
     }
 
-    // Compile-time routing : return corresponding math object type [!!!SCALABLE!!!]
-    template<typename T> constexpr MathObjType get_type() {
-        if constexpr (std::is_same_v<T, RealVector>) {return MathObjType::RealVector;}
-        else if constexpr (std::is_same_v<T, ComplexVector>) {return MathObjType::ComplexVector;}
-        else if constexpr (std::is_same_v<T, RealMatrix>) {return MathObjType::RealMatrix;}
-        else if constexpr (std::is_same_v<T, ComplexMatrix>) {return MathObjType::ComplexMatrix;}
-        else {static_assert(always_false_v<T>, "Unsupported math object type.");}
+    // Compile-time routing : return corresponding math object type 
+    template<typename T> constexpr uint8_t get_type() {
+        // Get std::vector<ObjEntry<T>> in MathObjPool
+        return TupleIdx<std::vector<ObjEntry<T>>, MathObjPool>::idx;
     }
 
-
-    // To help alongside swap_pop [!!!SCALABLE!!!]
-    template<typename T> void exe_with_pool(MathObjType type, T&& func_name) {
+    // To help alongside swap_pop
+    template<uint8_t idx = 0, typename Func> 
+    void exe_with_pool(uint8_t target_type_idx, Func&& func_name) {
         // std::forward<T>(func_name) is the forwarded lambda function
-        // (std::get<0>(obj_pool)) is the argument given to the lambda 
-        switch (type) {
-            case MathObjType::RealVector:
-                std::forward<T>(func_name)(std::get<0>(obj_pool)); break;
-            case MathObjType::ComplexVector:
-                std::forward<T>(func_name)(std::get<1>(obj_pool)); break;
-            case MathObjType::RealMatrix:
-                std::forward<T>(func_name)(std::get<2>(obj_pool)); break;
-            case MathObjType::ComplexMatrix:
-                std::forward<T>(func_name)(std::get<3>(obj_pool)); break;
+        // (std::get<0>(obj_pool)) is the argument given to the lambda
+        // Base case stop recursion if no corresponding type is found
+        if constexpr (idx < std::tuple_size_v<MathObjPool>) {
+            if (idx == target_type_idx) { // Found a matching pool
+                std::forward<Func>(func_name)(std::get<idx>(obj_pool));
+            } else { // Recursively check next idx type (idx + 1)
+                exe_with_pool<idx + 1>(target_type_idx, std::forward<Func>(func_name));
+            }
         }
     }
 
@@ -156,7 +166,7 @@ public:
 
         // Get corresponding pool and type
         auto& obj_pool = get_pool<T>();
-        MathObjType type = get_type<T>();
+        uint8_t type = get_type<T>();
 
         // get the index at the obj_pool
         uint32_t obj_index = obj_pool.size();

@@ -14,7 +14,7 @@ BY HAND on several files, Here are the following checklist :
 - MathObjType
 
 2. data-utilities/ :
-- data-utilities.hpp parts marked "[!!! SCALABLE !!!]"
+- data-utilities.hpp register math objects in MathObjPool marked "[!!! SCALABLE !!!]"
 
 3. data-utilities/HDF5-utilities/ : (almost every file in here basically)
 - write-actions.hpp file-write implementation of individual math objects
@@ -103,14 +103,6 @@ struct ComplexMatrix {
     // Zero-copy raw pointer exposure for the UI buffer
     inline std::complex<double>* raw_buffer() {return m_data.data();}
     inline const std::complex<double>* raw_buffer() const {return m_data.data();}
-};
-
-// For templates
-enum class MathObjType : uint8_t {
-    RealVector = 0,
-    ComplexVector = 1,
-    RealMatrix = 2,
-    ComplexMatrix = 3
 };
 
 // constexpr std::array<MathObjType, 4> ALL_MATH_OBJ_TYPES = {
