@@ -58,6 +58,18 @@ public:
 };
 
 
+// Manage math objects present in the active sandbox, basically CRUD
+class MathObjExplorerWindow : public UIWindow {
+private:
+public:
+    // Constructor simply sets UIWindow window_name
+    explicit MathObjExplorerWindow(bool start_open);
+
+    // Render function definition
+    void Render() override;
+};
+
+
 // Accept input as entries to create new math objects
 class MathObjCreatorWindow : public UIWindow {
 private:
@@ -74,19 +86,7 @@ public:
 };
 
 
-// Manage math objects present in the active sandbox, basically CRUD
-class MathObjExplorerWindow : public UIWindow {
-private:
-public:
-    // Constructor simply sets UIWindow window_name
-    explicit MathObjExplorerWindow(bool start_open);
-
-    // Render function definition
-    void Render() override;
-};
-
-
-// 
+// That top menu bar in primary window
 class MainMenuBar : public UIWindow {
 private:
     // UI variables

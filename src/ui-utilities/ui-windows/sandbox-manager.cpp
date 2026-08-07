@@ -186,8 +186,6 @@ void SandboxManagerWindow::Render() {
 
     ImGui::Separator();
 
-    // TEMPORARY FPS READ
-    ImGui::Text("FPS : %.1f", ImGui::GetIO().Framerate);
 
     // [MIDDLE SECTION] Selectable File Table and refresh file
     // Refresh Button aligned above the table

@@ -178,13 +178,17 @@ GLFWwindow* InitializeUI(int width, int height, const char* TITLE, const fs::pat
     G_Fonts.Small  = LoadFontOrDefault(smallPath, 13.0f);
     G_Fonts.Medium = LoadFontOrDefault(mediumPath, 18.0f);
     G_Fonts.Large  = LoadFontOrDefault(largePath, 20.0f);
+    // Setup fallbacks to imgui's default
     if (!G_Fonts.Medium) G_Fonts.Medium = G_Fonts.Fallback;
     if (!G_Fonts.Small)  G_Fonts.Small  = G_Fonts.Medium;
     if (!G_Fonts.Large)  G_Fonts.Large  = G_Fonts.Medium;
     // Set the medium size as the default global font
     io.FontDefault = G_Fonts.Medium;
-    // Automatically scale all ImGui padding/spacing relative to the standard 13px baseline
-    ImGui::GetStyle().ScaleAllSizes(18.0f / 13.0f);
+    // Automatically scale all ImGui padding/spacing relative
+    // from the standard 13px baseline to the Medium default 
+    if (io.FontDefault != G_Fonts.Fallback) {
+        ImGui::GetStyle().ScaleAllSizes(18.0f / 13.0f);
+    }
     // Texture atlas will be built immidiately the line after this
     // io.Fonts->Build();
 

@@ -33,23 +33,28 @@ private:
         T obj_data;
     };
 
-    // REGISTER MATH OBJECTS HERE 
-    template<typename ...Ts> 
+    // ...Ts packs all types passed into TuplePool
+    template<typename ...Ts>   
+    // Ts... unpacks passed types as std::tuple<std::vector<ObjEntry<Ts>>
     using TuplePool = std::tuple<std::vector<ObjEntry<Ts>>...>;
-    using MathObjPool = TuplePool< // [!!!SCALABLE!!!]
+    // REGISTER MATH OBJECTS HERE [!!!SCALABLE!!!]
+    using MathObjPool = TuplePool<
         RealVector,
         ComplexVector,
         RealMatrix,
         ComplexMatrix
     >; 
     
+    // CRAZY TEMPLATE METAPROGRAMMING FOR COMPILE TIME RECURSION FOR get_type<T>()
     template<typename T, typename Tuple> struct TupleIdx;
 
+    // BASE CASE 
     template<typename T, typename ...Types>
     struct TupleIdx<T, std::tuple<T, Types...>> {
         static constexpr std::uint8_t idx = 0;
     };
 
+    // RECURSIVE BODY
     template<typename T, typename U, typename ...Types>
     struct TupleIdx<T, std::tuple<U, Types...>> {
         static constexpr std::uint8_t idx = 1 + 
@@ -80,14 +85,14 @@ private:
         return TupleIdx<std::vector<ObjEntry<T>>, MathObjPool>::idx;
     }
 
-    // To help alongside swap_pop
+    // To help alongside swap_pop TMP + COMPILE TIME RECURSION ALERT
     template<uint8_t idx = 0, typename Func> 
     void exe_with_pool(uint8_t target_type_idx, Func&& func_name) {
-        // std::forward<T>(func_name) is the forwarded lambda function
-        // (std::get<0>(obj_pool)) is the argument given to the lambda
         // Base case stop recursion if no corresponding type is found
         if constexpr (idx < std::tuple_size_v<MathObjPool>) {
             if (idx == target_type_idx) { // Found a matching pool
+                // std::forward<T>(func_name) is the forwarded lambda function
+                // (std::get<0>(obj_pool)) is the argument given to the lambda
                 std::forward<Func>(func_name)(std::get<idx>(obj_pool));
             } else { // Recursively check next idx type (idx + 1)
                 exe_with_pool<idx + 1>(target_type_idx, std::forward<Func>(func_name));

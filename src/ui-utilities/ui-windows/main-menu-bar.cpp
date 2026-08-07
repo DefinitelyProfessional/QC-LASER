@@ -66,6 +66,9 @@ void MainMenuBar::Render() {
         "   < %i Threads Active >", threadpool->get_active_threads()
     );
 
+    // TEMPORARY FPS READ
+    ImGui::Text("FPS : %.1f", ImGui::GetIO().Framerate);
+    
     ImGui::EndMainMenuBar();
 }
 }

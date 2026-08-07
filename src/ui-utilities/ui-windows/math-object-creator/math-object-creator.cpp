@@ -2,6 +2,8 @@
 #include "ui-utilities/general-ui-utilities.hpp"
 #include "ui-utilities/ui-windows/math-object-creator/subwin/real-vector-subwin.cpp"
 
+// Get metadata
+#include "math-core/math-objects.hpp"
 
 #include "imgui.h"
 
@@ -20,8 +22,9 @@ void MathObjCreatorWindow::Render() {
     // +++ RealVector
     if (ImGui::CollapsingHeader("+ Create RealVector")) {
         ImGui::Indent();
-        ImGui::Text("Vectors with REAL number entries.");
-
+        if (ImGui::CollapsingHeader("Definition###RealVectorDefTXT")) {
+            ImGui::TextWrapped(RealVector::def_txt);
+        }
         display_error_buffer();
         
         // Input box for the vector's dimensions
@@ -54,7 +57,9 @@ void MathObjCreatorWindow::Render() {
     // +++ ComplexVector
     if (ImGui::CollapsingHeader("+ Create ComplexVector")) {
         ImGui::Indent();
-        ImGui::Text("Vectors with COMPLEX number entries.");
+        if (ImGui::CollapsingHeader("Definition###ComplexVectorDefTXT")) {
+            ImGui::TextWrapped(ComplexVector::def_txt);
+        }
 
         display_error_buffer();
 
@@ -66,7 +71,9 @@ void MathObjCreatorWindow::Render() {
     // +++ RealMatrix
     if (ImGui::CollapsingHeader("+ Create RealMatrix")) {
         ImGui::Indent();
-        ImGui::Text("Matrices with REAL number entries.");
+        if (ImGui::CollapsingHeader("Definition###RealMatrixDefTXT")) {
+            ImGui::TextWrapped(RealMatrix::def_txt);
+        }
 
         display_error_buffer();
 
@@ -78,7 +85,9 @@ void MathObjCreatorWindow::Render() {
     // +++ ComplexMatrix
     if (ImGui::CollapsingHeader("+ Create ComplexMatrix")) {
         ImGui::Indent();
-        ImGui::Text("Matrices with COMPLEX number entries.");
+        if (ImGui::CollapsingHeader("Definition###ComplexMatrixDefTXT")) {
+            ImGui::TextWrapped(ComplexMatrix::def_txt);
+        }
 
         display_error_buffer();
 

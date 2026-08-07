@@ -3,20 +3,16 @@
 #include <complex>
 #include <cstdint>
 #include <vector>
-// #include <array>
 
 /*
 Unfortunately, for every new math object data type, 
 there will be a LOT of source code repetition to implement -
 BY HAND on several files, Here are the following checklist :
 
-1. math-core/ : 
-- MathObjType
-
-2. data-utilities/ :
+1. data-utilities/ :
 - data-utilities.hpp register math objects in MathObjPool marked "[!!! SCALABLE !!!]"
 
-3. data-utilities/HDF5-utilities/ : (almost every file in here basically)
+2. data-utilities/HDF5-utilities/ : (almost every file in here basically)
 - write-actions.hpp file-write implementation of individual math objects
 - write-actions.cpp execution of writing every math objects to HDF5 file
 - read-actions.cpp  load file data into data registry, bit tedious alert
@@ -40,6 +36,12 @@ struct RealVector {
     // Zero-copy raw pointer exposure for the UI buffer
     inline double* raw_buffer() {return v_data.data();}
     inline const double* raw_buffer() const {return v_data.data();}
+
+    // Metadata text for UI
+    static constexpr const char* name_txt = "Real Vector";
+    static constexpr const char* def_txt = 
+        "An element of an n-dimensional vector space over the field of real numbers.\n"
+        "Represented as a vector of double-precision floats.";
 };
 
 
@@ -60,6 +62,12 @@ struct ComplexVector {
     // Zero-copy raw pointer exposure for the UI buffer
     inline std::complex<double>* raw_buffer() {return v_data.data();}
     inline const std::complex<double>* raw_buffer() const {return v_data.data();}
+
+    // Metadata text for UI, must be compatible for ImGui texts with no overhead
+    static constexpr const char* name_txt = "Complex Vector";
+    static constexpr const char* def_txt = 
+        "An element of an n-dimensional vector space over the field of complex numbers.\n"
+        "Represented as a vector of complex number double-precision floats.";
 };
 
 
@@ -82,6 +90,12 @@ struct RealMatrix {
     // Zero-copy raw pointer exposure for the UI buffer
     inline double* raw_buffer() {return m_data.data();}
     inline const double* raw_buffer() const {return m_data.data();}
+
+    // Metadata text for UI, must be compatible for ImGui texts with no overhead
+    static constexpr const char* name_txt = "Real Matrix";
+    static constexpr const char* def_txt = 
+        "Matrix over the field of real numbers.\n"
+        "etc...";
 };
 
 
@@ -103,4 +117,10 @@ struct ComplexMatrix {
     // Zero-copy raw pointer exposure for the UI buffer
     inline std::complex<double>* raw_buffer() {return m_data.data();}
     inline const std::complex<double>* raw_buffer() const {return m_data.data();}
+
+    // Metadata text for UI, must be compatible for ImGui texts with no overhead
+    static constexpr const char* name_txt = "Complex Matrix";
+    static constexpr const char* def_txt = 
+        "Matrix over the field of complex numbers.\n"
+        "etc...";
 };
