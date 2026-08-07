@@ -39,7 +39,7 @@ int main() {
 
     // IMGUI UI SUBSYSTEMS INITIALIZATION
     GLFWwindow* host_window = STAGE::InitializeUI(1500, 1000, "QC Linear Algebra Sandbox Engine R.", ROOT_DIR);
-    if (!host_window) {std::cerr << "Fatal Error: Failed to initialize application stages."; return -1;}
+    if (!host_window) {std::cerr << "[Fatal Error] Failed to initialize application stages."; return -1;}
     ImVec4 clear_color = ImVec4(0.12f, 0.12f, 0.14f, 1.00f);
 
 
@@ -53,7 +53,7 @@ int main() {
     UI::SandboxManagerWindow* sandbox_win = win_manager.RegisterWindow<UI::SandboxManagerWindow>(
         true, SAVED_DATA_DIR, active_sandbox.get_active_filename());
 
-    auto  switch_whole_sandbox = [&active_sandbox, &sandbox_win](std::string filename) {
+    auto switch_whole_sandbox = [&active_sandbox, &sandbox_win](std::string filename) {
         sandbox_win->set_error_buffer(true, "Loading " + filename + " ...");
 
         G_threadpool->assign_task([&active_sandbox, &sandbox_win, target = std::move(filename)]() {

@@ -31,6 +31,10 @@ endif()
 set(BUNDLE_DIR "${CMAKE_BINARY_DIR}/QC-LASER-Portable-Distribution")
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${BUNDLE_DIR}")
 file(MAKE_DIRECTORY "${BUNDLE_DIR}/assets")
+file(MAKE_DIRECTORY "${BUNDLE_DIR}/assets/fonts")
+file(MAKE_DIRECTORY "${BUNDLE_DIR}/assets/fonts/small")
+file(MAKE_DIRECTORY "${BUNDLE_DIR}/assets/fonts/medium")
+file(MAKE_DIRECTORY "${BUNDLE_DIR}/assets/fonts/large")
 file(MAKE_DIRECTORY "${BUNDLE_DIR}/saved-data")
 
 # ---------------------------------------------------------

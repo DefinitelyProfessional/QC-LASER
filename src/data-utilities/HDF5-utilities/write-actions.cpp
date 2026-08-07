@@ -79,13 +79,13 @@ StatusPayload SandboxDataManager::save_whole_sandbox_internal() const {
         std::string err_msg = errH5.getDetailMsg();
         // Clean up the incomplete/corrupted temporary file
         if (fs::exists(tmp_filepath)) {fs::remove(tmp_filepath);}
-        std::cout << "[SANDBOX] HDF5 Save Failed: " << err_msg << "\n";
+        std::cerr << "[SANDBOX] HDF5 Save Failed: " << err_msg << "\n";
         return {"HDF5 Save Failed : " + err_msg, false};
     // Handle standard C++ exceptions
     } catch (const std::exception& err) {
         // Clean up the incomplete/corrupted temporary file
         if (fs::exists(tmp_filepath)) {fs::remove(tmp_filepath);}
-        std::cout << "[SANDBOX] Standard Exception Failed: " << err.what() << "\n";
+        std::cerr << "[SANDBOX] Standard Exception Failed: " << err.what() << "\n";
         return {"Standard Exception during save : " + std::string(err.what()), false};
     }
 

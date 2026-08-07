@@ -12,8 +12,8 @@ UIWindow(">>> MATH OBJECT CREATOR", start_open){}
 // Public
 void MathObjCreatorWindow::Render() {
     // Window settings
-    ImGui::SetNextWindowSize(ImVec2(370, 300), ImGuiCond_FirstUseEver);
-    ImGui::SetNextWindowPos(ImVec2(0, 700), ImGuiCond_FirstUseEver);
+    ImGui::SetNextWindowSize(ImVec2(330, 330), ImGuiCond_FirstUseEver);
+    ImGui::SetNextWindowPos(ImVec2(0, 756), ImGuiCond_FirstUseEver);
     ImGui::Begin(window_name.c_str(), &is_open);
 
 

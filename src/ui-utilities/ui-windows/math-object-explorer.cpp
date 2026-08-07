@@ -10,8 +10,8 @@ UIWindow(">>> MATH OBJECT EXPLORER", start_open){}
 // Public
 void MathObjExplorerWindow::Render(){
     // Window settings
-    ImGui::SetNextWindowSize(ImVec2(370, 330), ImGuiCond_FirstUseEver);
-    ImGui::SetNextWindowPos(ImVec2(0, 370), ImGuiCond_FirstUseEver);
+    ImGui::SetNextWindowSize(ImVec2(330, 330), ImGuiCond_FirstUseEver);
+    ImGui::SetNextWindowPos(ImVec2(0, 426), ImGuiCond_FirstUseEver);
     ImGui::Begin(window_name.c_str(), &is_open);
     
     display_error_buffer();

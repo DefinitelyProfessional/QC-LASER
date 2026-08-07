@@ -154,7 +154,7 @@ StatusPayload SandboxDataManager::load_whole_sandbox_internal() {
         key_str_pool.clear();
         obj_pool = MathObjPool{};
         
-        std::cout << "[SANDBOX] HDF5 Load Failed: " << err_msg << "\n";
+        std::cerr << "[SANDBOX] HDF5 Load Failed: " << err_msg << "\n";
         return {"HDF5 Load Failed : " + err_msg, false};
     // Handle standard C++ exceptions
     } catch (const std::exception& err) {
@@ -163,7 +163,7 @@ StatusPayload SandboxDataManager::load_whole_sandbox_internal() {
         key_str_pool.clear();
         obj_pool = MathObjPool{};
         
-        std::cout << "[SANDBOX] Standard Exception Failed: " << err.what() << "\n";
+        std::cerr << "[SANDBOX] Standard Exception Failed: " << err.what() << "\n";
         return {"Standard Exception during save : " + std::string(err.what()), false};
     }
 

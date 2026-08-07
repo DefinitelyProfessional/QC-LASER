@@ -2,6 +2,9 @@
 
 #include <string>
 
+// Forward declare
+struct ImFont;
+
 // Base class for windows based UI
 class UIWindow {
 protected:
@@ -30,3 +33,22 @@ public:
     // Pure virtual function: Every window MUST implement its layout logic here
     virtual void Render() = 0;
 };
+
+
+// Global fonts system, to be initialized early in main 
+struct SimpleFonts {
+    // Font pointers guaranteed to be non-null after init
+    ImFont* Fallback = nullptr;// ImGui's built-in default
+    ImFont* Small   = nullptr;
+    ImFont* Medium  = nullptr; // To be this app's default
+    ImFont* Large   = nullptr;
+
+    // Helper push/pop wrappers
+    void PushSmall();
+    void PushMedium();
+    void PushLarge();
+    void Pop();
+};
+
+// Global instance accessible across ui-windows
+extern SimpleFonts G_Fonts;

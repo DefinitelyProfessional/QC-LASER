@@ -3,8 +3,6 @@
 // Include for UIWindow class
 #include "ui-utilities/general-ui-utilities.hpp"
 
-// #include "imgui.h"
-
 #include <filesystem>
 
 #include <vector>
@@ -42,18 +40,14 @@ namespace STAGE {
         // Optional: Search for a window dynamically by its ImGui string ID
         // UIWindow* FindWindow(const std::string& name);
     };
+
     // Get the file path to ROOT, saved-data, and assets directory for global use
-    void InitializeDirectories(std::filesystem::path& ROOT, 
+    // Also ensures the existance of hardcoded directories
+    void InitializeDirectories(std::filesystem::path& ROOT_DIR,
         std::filesystem::path& SAVED_DATA_DIR, std::filesystem::path& ASSETS_DIR);
 
     // Encapsulates the complete boot sequence for GLFW, OpenGL, and ImGui
     GLFWwindow* InitializeUI(int width, int height, const char* TITLE, const std::filesystem::path& ROOT);
-
-    // class WorkSpaceWindow {
-    // private:
-    //     float zoom = 1.0f;
-    //     ImVec2 pan
-    // };
     
     // Encapsulates the complete beginning of the render loop
     void StartRenderLoop();

@@ -16,3 +16,9 @@ void UIWindow::display_error_buffer() {
         );
     }
 }
+
+
+void SimpleFonts::PushSmall()  {ImGui::PushFont(Small);}
+void SimpleFonts::PushMedium() {ImGui::PushFont(Medium);}
+void SimpleFonts::PushLarge()  {ImGui::PushFont(Large);}
+void SimpleFonts::Pop()        {ImGui::PopFont();}

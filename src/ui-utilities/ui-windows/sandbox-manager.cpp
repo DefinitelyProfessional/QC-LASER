@@ -134,13 +134,12 @@ void SandboxManagerWindow::save_current_active_button() {
 // Public
 void SandboxManagerWindow::Render() {
     // Window settings
-    ImGui::SetNextWindowSize(ImVec2(370, 350), ImGuiCond_FirstUseEver);
-    ImGui::SetNextWindowPos(ImVec2(0, 20), ImGuiCond_FirstUseEver);
+    ImGui::SetNextWindowSize(ImVec2(330, 400), ImGuiCond_FirstUseEver);
+    ImGui::SetNextWindowPos(ImVec2(0, 26), ImGuiCond_FirstUseEver);
     ImGui::Begin(window_name.c_str(), &is_open);
 
     // [TOP SECTION] Current Active and Create New
     ImGui::Text("Current Active Sandbox : ");
-    ImGui::SameLine();
     ImGui::TextColored(ImVec4(1.0f,0.5f,0.0f,1.0f), "%s", active_filename.c_str());
     ImGui::SameLine();
     
