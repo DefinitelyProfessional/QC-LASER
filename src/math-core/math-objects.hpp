@@ -104,10 +104,3 @@ struct ComplexMatrix {
     inline std::complex<double>* raw_buffer() {return m_data.data();}
     inline const std::complex<double>* raw_buffer() const {return m_data.data();}
 };
-
-// constexpr std::array<MathObjType, 4> ALL_MATH_OBJ_TYPES = {
-//     MathObjType::RealVector,
-//     MathObjType::ComplexVector,
-//     MathObjType::RealMatrix,
-//     MathObjType::ComplexMatrix
-// };

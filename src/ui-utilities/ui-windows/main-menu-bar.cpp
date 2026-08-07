@@ -53,9 +53,10 @@ void MainMenuBar::Render() {
 
         ImGui::EndMenu();
     }
+    ImGui::Text("   Using");
     ImGui::TextColored(
         ImVec4(1.0f,0.5f,0.0f,1.0f),
-        "Using %s", sandbox_manager_win->get_active_filename().c_str()
+        "%s", sandbox_manager_win->get_active_filename().c_str()
     );
 
     sandbox_manager_win->save_current_active_button();
