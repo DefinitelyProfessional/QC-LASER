@@ -76,16 +76,17 @@ set(APP_SOURCES
     src/ui-utilities/general-ui-utilities.cpp
     src/ui-utilities/stage-utilities.hpp
     src/ui-utilities/stage-utilities.cpp
-    src/ui-utilities/ui-windows.hpp
-    src/ui-utilities/ui-windows/math-object-creator/math-object-creator.cpp
-    src/ui-utilities/ui-windows/math-object-creator/subwin/complex-vector-subwin.cpp
-    src/ui-utilities/ui-windows/math-object-creator/subwin/complex-matrix-subwin.cpp
-    src/ui-utilities/ui-windows/math-object-creator/subwin/real-vector-subwin.cpp
-    src/ui-utilities/ui-windows/math-object-creator/subwin/real-matrix-subwin.cpp
-    src/ui-utilities/ui-windows/math-object-explorer.cpp
-    src/ui-utilities/ui-windows/sandbox-manager.cpp
-    src/ui-utilities/ui-windows/main-menu-bar.cpp
     src/ui-utilities/icon-resource.hpp
+    src/ui-utilities/ui-windows.hpp
+    src/ui-utilities/ui-windows/main-menu-bar/main-menu-bar.hpp
+    src/ui-utilities/ui-windows/main-menu-bar/main-menu-bar.cpp
+    src/ui-utilities/ui-windows/sandbox-manager/sandbox-manager.hpp
+    src/ui-utilities/ui-windows/sandbox-manager/sandbox-manager.cpp
+    src/ui-utilities/ui-windows/math-object-explorer/math-object-explorer.hpp
+    src/ui-utilities/ui-windows/math-object-explorer/math-object-explorer.cpp
+
+    src/ui-utilities/ui-windows/math-object-creator/math-object-creator.hpp
+    src/ui-utilities/ui-windows/math-object-creator/math-object-creator.cpp
 )   
 
 set(THIRDPARTY_SOURCES

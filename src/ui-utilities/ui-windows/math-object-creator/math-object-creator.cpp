@@ -1,6 +1,5 @@
-#include "ui-utilities/ui-windows.hpp"
+#include "ui-utilities/ui-windows/math-object-creator/math-object-creator.hpp"
 #include "ui-utilities/general-ui-utilities.hpp"
-#include "ui-utilities/ui-windows/math-object-creator/subwin/real-vector-subwin.cpp"
 
 // Get metadata
 #include "math-core/math-objects.hpp"

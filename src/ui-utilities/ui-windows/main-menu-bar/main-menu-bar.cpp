@@ -1,6 +1,11 @@
-#include "ui-utilities/ui-windows.hpp"
+#include "ui-utilities/ui-windows/main-menu-bar/main-menu-bar.hpp"
 #include "ui-utilities/general-ui-utilities.hpp"
+
+// To control window visibility
 #include "thread-core/thread-pool.hpp"
+#include "ui-utilities/ui-windows/sandbox-manager/sandbox-manager.hpp"
+#include "ui-utilities/ui-windows/math-object-explorer/math-object-explorer.hpp"
+#include "ui-utilities/ui-windows/math-object-creator/math-object-creator.hpp"
 
 #include "imgui.h"
 
@@ -9,13 +14,13 @@ namespace UI {
 MainMenuBar::MainMenuBar(
     MULTI::ThreadPool* TP,
     SandboxManagerWindow* SM,
-    MathObjCreatorWindow* MC,
-    MathObjExplorerWindow* ME
+    MathObjExplorerWindow* ME,
+    MathObjCreatorWindow* MC
 ) : UIWindow("MAIN MENU BAR"), 
     threadpool(TP), 
     sandbox_manager_win(SM), 
-    math_obj_creator_win(MC),
-    math_obj_explorer_win(ME)
+    math_obj_explorer_win(ME),
+    math_obj_creator_win(MC)
 {}
 
 // Public

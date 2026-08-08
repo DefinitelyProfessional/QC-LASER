@@ -1,4 +1,4 @@
-#include "ui-utilities/ui-windows.hpp"
+#include "ui-utilities/ui-windows/math-object-explorer/math-object-explorer.hpp"
 #include "ui-utilities/general-ui-utilities.hpp"
 
 #include "imgui.h"

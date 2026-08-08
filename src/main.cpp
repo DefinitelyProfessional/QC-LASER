@@ -1,4 +1,3 @@
-//"C:\Users\locke\AppData\Local\Python\pythoncore-3.14-64\python.exe"
 #include "data-utilities/data-utilities.hpp"
 #include "data-utilities/data-payload.hpp"
 #include "ui-utilities/stage-utilities.hpp"
@@ -94,8 +93,8 @@ int main() {
     UI::MainMenuBar* main_menu_bar = win_manager.RegisterWindow<UI::MainMenuBar>(
         G_threadpool.get(),
         sandbox_win,
-        math_obj_creator_win,
-        math_obj_explorer_win
+        math_obj_explorer_win,
+        math_obj_creator_win
     ); main_menu_bar->is_open = true;
     
 
