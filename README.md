@@ -4,7 +4,7 @@
 
 
 ---
-#### Made with Dear ImGui v1.92.8 by OCornut and contributors. 
+#### Made with Dear ImGui v1.92.9b by OCornut and contributors. 
 Implementations of Linear Algebra concepts relevant to Quantum Computing made into a sandbox engine for testing and learning purposes. Have a hands-on experience with the mathematical foundations of quantum computing. Go explore and manipulate linear algebra objects and operations in a sandbox environment.
 
 

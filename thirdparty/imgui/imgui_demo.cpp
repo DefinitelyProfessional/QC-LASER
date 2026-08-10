@@ -1,4 +1,4 @@
-// dear imgui, v1.92.9 WIP
+// dear imgui, v1.92.9b
 // (demo code)
 
 // Help:
@@ -86,6 +86,7 @@ Index of this file:
 // [SECTION] DemoWindowWidgetsFonts()
 // [SECTION] DemoWindowWidgetsImages()
 // [SECTION] DemoWindowWidgetsListBoxes()
+// [SECTION] DemoWindowWidgetsLiveEdit()
 // [SECTION] DemoWindowWidgetsMultiComponents()
 // [SECTION] DemoWindowWidgetsPlotting()
 // [SECTION] DemoWindowWidgetsProgressBars()
@@ -331,6 +332,8 @@ struct ImGuiDemoWindowData
 
     // Other data
     bool DisableSections = false;
+    bool LiveEditOverride = false;
+    ImGuiItemFlags LiveEditFlags = ImGuiItemFlags_LiveEditOnInputText;
     ExampleTreeNode* DemoTree = NULL;
 
     ~ImGuiDemoWindowData() { if (DemoTree) ExampleTree_DestroyNode(DemoTree); }
@@ -1744,7 +1747,7 @@ static void DemoWindowWidgetsDragAndDrop()
 
                 if (ImGui::IsItemActive() && !ImGui::IsItemHovered())
                 {
-                    int n_next = n + (ImGui::GetMouseDragDelta(0).y < 0.f ? -1 : 1);
+                    int n_next = n + (ImGui::GetMouseDragDelta(0).y < 0.0f ? -1 : 1);
                     if (n_next >= 0 && n_next < IM_COUNTOF(item_names))
                     {
                         item_names[n] = item_names[n_next];
@@ -2010,6 +2013,44 @@ static void DemoWindowWidgetsListBoxes()
 }
 
 //-----------------------------------------------------------------------------
+// [SECTION] DemoWindowWidgetsLiveEdit()
+//-----------------------------------------------------------------------------
+
+static void DemoWindowWidgetsLiveEdit(ImGuiDemoWindowData* demo_data)
+{
+    if (ImGui::TreeNode("Live Edit Flags"))
+    {
+        IMGUI_DEMO_MARKER("Widgets/Live Edit Flgs");
+
+        ImGui::TextWrapped("Select whether to apply keyboard edits to backing variables _while_ typing.");
+
+        ImGui::Checkbox("Override Live Edit Flags in Demo Window", &demo_data->LiveEditOverride);
+        if (!demo_data->LiveEditOverride)
+            demo_data->LiveEditFlags = ImGui::GetItemFlags();
+
+        ImGui::BeginDisabled(demo_data->LiveEditOverride == false);
+        ImGui::Indent();
+        ImGui::CheckboxFlags("ImGuiItemFlags_LiveEditOnInputText", &demo_data->LiveEditFlags, ImGuiItemFlags_LiveEditOnInputText);
+        ImGui::CheckboxFlags("ImGuiItemFlags_LiveEditOnInputScalar", &demo_data->LiveEditFlags, ImGuiItemFlags_LiveEditOnInputScalar);
+        ImGui::Unindent();
+        ImGui::EndDisabled();
+
+        ImGui::Text("Try typing '123' and seeing effect on backing value:");
+        static char str[32] = "";
+        ImGui::InputText("str", str, IM_COUNTOF(str));
+        ImGui::Text("Backing value: \"%s\"", str);
+        static int i = 0;
+        ImGui::InputInt("int", &i, 0, 0);
+        ImGui::Text("Backing value: %d", i);
+        static float f = 0.0f;
+        ImGui::SliderFloat("float", &f, 0.0f, 100.0f);
+        ImGui::Text("Backing value: %f", f);
+
+        ImGui::TreePop();
+    }
+}
+
+//-----------------------------------------------------------------------------
 // [SECTION] DemoWindowWidgetsMultiComponents()
 //-----------------------------------------------------------------------------
 
@@ -2160,7 +2201,7 @@ static void DemoWindowWidgetsProgressBars()
 
         char buf[32];
         sprintf(buf, "%d/%d", (int)(progress * 1753), 1753);
-        ImGui::ProgressBar(progress, ImVec2(0.f, 0.f), buf);
+        ImGui::ProgressBar(progress, ImVec2(0.0f, 0.0f), buf);
 
         // Pass an animated negative value, e.g. -1.0f * (float)ImGui::GetTime() is the recommended value.
         // Adjust the factor if you want to adjust the animation speed.
@@ -2189,10 +2230,28 @@ static void DemoWindowWidgetsQueryingStatuses()
         };
         static int item_type = 4;
         static bool item_disabled = false;
+        static bool liveedit_flags_override = false;
+        static ImGuiItemFlags liveedit_flags = 0;
         ImGui::Combo("Item Type", &item_type, item_names, IM_COUNTOF(item_names), IM_COUNTOF(item_names));
         ImGui::SameLine();
         HelpMarker("Testing how various types of items are interacting with the IsItemXXX functions. Note that the bool return value of most ImGui function is generally equivalent to calling ImGui::IsItemHovered().");
         ImGui::Checkbox("Item Disabled", &item_disabled);
+        ImGui::Checkbox("Override LiveEdit:", &liveedit_flags_override);
+        ImGui::SameLine();
+        if (!liveedit_flags_override)
+            liveedit_flags = ImGui::GetItemFlags();
+        ImGui::BeginDisabled(liveedit_flags_override == false);
+        ImGui::CheckboxFlags("_LiveEditOnInput", &liveedit_flags, ImGuiItemFlags_LiveEditOnInput);
+        ImGui::SameLine();
+        ImGui::CheckboxFlags("_LiveEditOnInputText", &liveedit_flags, ImGuiItemFlags_LiveEditOnInputText);
+        ImGui::SameLine();
+        ImGui::CheckboxFlags("_LiveEditOnInputScalar", &liveedit_flags, ImGuiItemFlags_LiveEditOnInputScalar);
+        ImGui::EndDisabled();
+        if (liveedit_flags_override)
+        {
+            ImGui::PushItemFlag(ImGuiItemFlags_LiveEditOnInputText, (liveedit_flags & ImGuiItemFlags_LiveEditOnInputText) != 0);
+            ImGui::PushItemFlag(ImGuiItemFlags_LiveEditOnInputScalar, (liveedit_flags & ImGuiItemFlags_LiveEditOnInputScalar) != 0);
+        }
 
         // Submit selected items so we can query their status in the code following it.
         bool ret = false;
@@ -2279,6 +2338,11 @@ static void DemoWindowWidgetsQueryingStatuses()
             "IsItemHovered(_Tooltip) = %d",
             hovered_delay_none, hovered_delay_stationary, hovered_delay_short, hovered_delay_normal, hovered_delay_tooltip);
 
+        if (liveedit_flags_override)
+        {
+            ImGui::PopItemFlag();
+            ImGui::PopItemFlag();
+        }
         if (item_disabled)
             ImGui::EndDisabled();
 
@@ -4413,8 +4477,14 @@ static void DemoWindowWidgets(ImGuiDemoWindowData* demo_data)
     // IMGUI_DEMO_MARKER("Widgets");
 
     const bool disable_all = demo_data->DisableSections; // The Checkbox for that is inside the "Disabled" section at the bottom
+    const bool override_liveedit = demo_data->LiveEditOverride;
     if (disable_all)
         ImGui::BeginDisabled();
+    if (override_liveedit)
+    {
+        ImGui::PushItemFlag(ImGuiItemFlags_LiveEditOnInputText, (demo_data->LiveEditFlags & ImGuiItemFlags_LiveEditOnInputText) != 0);
+        ImGui::PushItemFlag(ImGuiItemFlags_LiveEditOnInputScalar, (demo_data->LiveEditFlags & ImGuiItemFlags_LiveEditOnInputScalar) != 0);
+    }
 
     DemoWindowWidgetsBasic();
     DemoWindowWidgetsBullets();
@@ -4434,6 +4504,7 @@ static void DemoWindowWidgets(ImGuiDemoWindowData* demo_data)
     DemoWindowWidgetsFonts();
     DemoWindowWidgetsImages();
     DemoWindowWidgetsListBoxes();
+    DemoWindowWidgetsLiveEdit(demo_data);
     DemoWindowWidgetsMultiComponents();
     DemoWindowWidgetsPlotting();
     DemoWindowWidgetsProgressBars();
@@ -4448,6 +4519,11 @@ static void DemoWindowWidgets(ImGuiDemoWindowData* demo_data)
     DemoWindowWidgetsTreeNodes();
     DemoWindowWidgetsVerticalSliders();
 
+    if (override_liveedit)
+    {
+        ImGui::PopItemFlag();
+        ImGui::PopItemFlag();
+    }
     if (disable_all)
         ImGui::EndDisabled();
 }
@@ -9018,7 +9094,7 @@ struct ExampleAppConsole
     static int   Stricmp(const char* s1, const char* s2)         { int d; while ((d = toupper(*s2) - toupper(*s1)) == 0 && *s1) { s1++; s2++; } return d; }
     static int   Strnicmp(const char* s1, const char* s2, int n) { int d = 0; while (n > 0 && (d = toupper(*s2) - toupper(*s1)) == 0 && *s1) { s1++; s2++; n--; } return d; }
     static char* Strdup(const char* s)                           { IM_ASSERT(s); size_t len = strlen(s) + 1; void* buf = ImGui::MemAlloc(len); IM_ASSERT(buf); return (char*)memcpy(buf, (const void*)s, len); }
-    static void  Strtrim(char* s)                                { char* str_end = s + strlen(s); while (str_end > s && str_end[-1] == ' ') str_end--; *str_end = 0; }
+    static void  Strtrimblanks(char* s)                          { char* str_end = s + strlen(s); while (str_end > s && str_end[-1] == ' ') str_end--; *str_end = 0; }
 
     void    ClearLog()
     {
@@ -9167,10 +9243,10 @@ struct ExampleAppConsole
         if (ImGui::InputText("Input", InputBuf, IM_COUNTOF(InputBuf), input_text_flags, &TextEditCallbackStub, (void*)this))
         {
             char* s = InputBuf;
-            Strtrim(s);
+            Strtrimblanks(s);
             if (s[0])
                 ExecCommand(s);
-            strcpy(s, "");
+            s[0] = 0;
             reclaim_focus = true;
         }
 
@@ -10189,6 +10265,7 @@ static void ShowExampleAppCustomRendering(bool* p_open)
         {
             IMGUI_DEMO_MARKER("Examples/Custom rendering/Primitives");
             ImGui::PushItemWidth(-ImGui::GetFontSize() * 15);
+            ImGui::PushItemFlag(ImGuiItemFlags_LiveEditOnInput, true);
             ImDrawList* draw_list = ImGui::GetWindowDrawList();
 
             // Draw gradients
@@ -10215,7 +10292,7 @@ static void ShowExampleAppCustomRendering(bool* p_open)
 
             // Draw a bunch of primitives
             ImGui::Text("All primitives");
-            static float sz = 36.0f;
+            static float sz = 42.0f;
             static float thickness = 3.0f;
             static int ngon_sides = 6;
             static bool circle_segments_override = false;
@@ -10309,6 +10386,7 @@ static void ShowExampleAppCustomRendering(bool* p_open)
             x += sz + spacing;
 
             ImGui::Dummy(ImVec2((sz + spacing) * 13.2f, (sz + spacing) * 3.0f));
+            ImGui::PopItemFlag();
             ImGui::PopItemWidth();
             ImGui::EndTabItem();
         }
