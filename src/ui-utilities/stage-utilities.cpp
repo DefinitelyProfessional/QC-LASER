@@ -12,17 +12,21 @@
 #include "imgui.h"
 #include "implot.h"
 
+// MicroTex initialization
+// #include "baked_clm1.h"  // Exposes: lm_math_clm, lm_math_clm_LEN
+// #include "baked_font.h"  // Exposes: lm_math_otf, lm_math_otf_LEN
+// #include "imgui_microtex.h"
+// #include "microtex.h"
+
 #include <GLFW/glfw3.h>
 #include <GL/gl.h>
 
 #include <H5Exception.h>
 #include <H5Cpp.h>
-#include <ostream>
 
 // Expose GLFW's native Win32 functions
 #define GLFW_EXPOSE_NATIVE_WIN32
 #include <GLFW/glfw3native.h>
-
 
 #include <libloaderapi.h>
 #include <minwindef.h>
