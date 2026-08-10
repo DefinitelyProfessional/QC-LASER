@@ -6,18 +6,18 @@
 #include "thread-core/result-pool.hpp"
 
 #include <GLFW/glfw3.h>
-#include <algorithm>
-#include <thread>
 #include "imgui.h"
+#include "implot.h"
 
 #define WIN32_LEAN_AND_MEAN // Trim down Windows header
 #include <windows.h>
 
 #include <filesystem>
-#include <iostream>
 #include <algorithm>
+#include <iostream>
 #include <utility>
 #include <memory>
+#include <thread>
 #include <string>
 
 namespace fs = std::filesystem;
@@ -101,7 +101,8 @@ int main() {
     // CORE IMGUI RENDER LOOP
     while (!glfwWindowShouldClose(host_window)) {
         STAGE::StartRenderLoop();
-        // ImGui::ShowDemoWindow();
+        ImGui::ShowDemoWindow();
+        ImPlot::ShowDemoWindow();
         // Unified rendering of all window elements
         win_manager.RenderAll();
         G_outputpool->execute_results();

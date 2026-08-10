@@ -4,8 +4,17 @@
 
 
 ---
-#### Made with Dear ImGui v1.92.9b by OCornut and contributors. 
-Implementations of Linear Algebra concepts relevant to Quantum Computing made into a sandbox engine for testing and learning purposes. Have a hands-on experience with the mathematical foundations of quantum computing. Go explore and manipulate linear algebra objects and operations in a sandbox environment.
+#### Implementations of Linear Algebra concepts (and those relevant to Quantum Computing) made into a sandbox engine for experimental testing and learning purposes.  
+
+Have a hands-on experience fiddling with the mathematical concepts of linear algebra and even experimental QC theory (Note, this is not qiskit, but more like temu qiskit but for small experiments and learning how things work).
+
+#### Made with [Dear ImGui](https://github.com/ocornut/imgui) v1.92.9b by OCornut and contributors. 
+All hail ImGui the lightweight and minimalistic UI to make the most out of your expensive RAM for the real fun stuff that is, the esteemed Linear Algebra and Quantum Computing actions you'll be doing.
+
+#### [ImPlot](https://github.com/epezent/implot) v1.0 for plotting and visualizing data.
+
+#### []()
+Long live open source.
 
 
 ## Build System

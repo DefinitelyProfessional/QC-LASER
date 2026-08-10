@@ -9,7 +9,8 @@
 // Required thirdparties
 #include "imgui_impl_opengl3.h"
 #include "imgui_impl_glfw.h"
-#include <imgui.h>
+#include "imgui.h"
+#include "implot.h"
 
 #include <GLFW/glfw3.h>
 #include <GL/gl.h>
@@ -143,6 +144,9 @@ GLFWwindow* InitializeUI(int width, int height, const char* TITLE, const fs::pat
     // ImGui Context Setup
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
+    ImPlot::CreateContext(); // Create ImPlot context AFTER ImGui
+
+    // ImGui IO config duh
     ImGuiIO& io = ImGui::GetIO();
     io.MouseWheel = 1.0f;
     io.ConfigWindowsMoveFromTitleBarOnly = true;
@@ -226,6 +230,8 @@ void EndRenderLoop(GLFWwindow* window, const ImVec4& clear_color) {
 void ShutdownUI(GLFWwindow* window) {
     ImGui_ImplOpenGL3_Shutdown();
     ImGui_ImplGlfw_Shutdown();
+
+    ImPlot::DestroyContext(); // Destroy ImPlot context BEFORE ImGui
     ImGui::DestroyContext();
 
     if (window) {glfwDestroyWindow(window);}

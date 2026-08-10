@@ -97,6 +97,9 @@ set(THIRDPARTY_SOURCES
     thirdparty/imgui/imgui_widgets.cpp
     thirdparty/imgui/backends/imgui_impl_glfw.cpp
     thirdparty/imgui/backends/imgui_impl_opengl3.cpp
+    thirdparty/implot/implot.cpp
+    thirdparty/implot/implot_demo.cpp
+    thirdparty/implot/implot_items.cpp
 )
 
 # ---------------------------------------------------------
@@ -108,6 +111,7 @@ add_library(QC-LASER-ThirdParty STATIC ${THIRDPARTY_SOURCES})
 target_include_directories(QC-LASER-ThirdParty PUBLIC
     thirdparty/imgui
     thirdparty/imgui/backends
+    thirdparty/implot
 )
 
 add_executable(${PROJECT_NAME} ${APP_SOURCES})
@@ -143,6 +147,7 @@ endif()
 # ---------------------------------------------------------
 target_precompile_headers(${PROJECT_NAME} PRIVATE
     "thirdparty/imgui/imgui.h"
+    "thirdparty/implot/implot.h"
     <GLFW/glfw3.h>
     <iostream>
     <H5Cpp.h>
