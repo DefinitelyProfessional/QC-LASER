@@ -13,7 +13,7 @@ All hail ImGui the lightweight and minimalistic UI to make the most out of your 
 
 #### [ImPlot](https://github.com/epezent/implot) v1.0 for plotting and visualizing data.
 
-#### []()
+#### [MicroTex](https://github.com/NanoMichael/MicroTeX) extracted from [Imgui Bundle](https://github.com/pthom/imgui_bundle) v1.92.801
 Long live open source.
 
 
@@ -57,6 +57,7 @@ pacman -S mingw-w64-ucrt-x86_64-toolchain \
  mingw-w64-ucrt-x86_64-boost \
  mingw-w64-ucrt-x86_64-glfw \
  mingw-w64-ucrt-x86_64-hdf5 \
+ mingw-w64-ucrt-x86_64-freetype \
  mingw-w64-ucrt-x86_64-pkgconf
 ```
 

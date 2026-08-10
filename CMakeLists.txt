@@ -42,6 +42,7 @@ file(MAKE_DIRECTORY "${BUNDLE_DIR}/saved-data")
 # ---------------------------------------------------------
 find_package(glfw3 CONFIG REQUIRED) 
 find_package(Boost CONFIG REQUIRED)
+find_package(Freetype REQUIRED)
 find_package(OpenGL REQUIRED)
 
 # ---------------------------------------------------------
@@ -55,7 +56,7 @@ find_package(HDF5 COMPONENTS CXX REQUIRED)
 # Listing headers here tells VSCode that they belong to this target.
 set(APP_SOURCES
     src/main.cpp
-    src/app.rc
+    src/appicon.rc
     src/data-utilities/data-utilities.hpp
     src/data-utilities/data-utilities.cpp
     src/data-utilities/data-payload.hpp
@@ -101,18 +102,29 @@ set(THIRDPARTY_SOURCES
     thirdparty/implot/implot_demo.cpp
     thirdparty/implot/implot_items.cpp
 )
+# Collect the bundle of sourcecode for MicroTex 
+file(GLOB_RECURSE MICROTEX_SOURCES
+    "thirdparty/imgui_microtex/MicroTeX/*.cpp"
+    "thirdparty/imgui_microtex/imgui_microtex/*.cpp"
+)
+list(APPEND THIRDPARTY_SOURCES ${MICROTEX_SOURCES})
 
 # ---------------------------------------------------------
 # TARGET DEFINITIONS
 # ---------------------------------------------------------
-# Compile heavy, unchanging dependencies into a local static library
 add_library(QC-LASER-ThirdParty STATIC ${THIRDPARTY_SOURCES})
 
 target_include_directories(QC-LASER-ThirdParty PUBLIC
     thirdparty/imgui
     thirdparty/imgui/backends
     thirdparty/implot
+    thirdparty/imgui_microtex/imgui_microtex
+    thirdparty/imgui_microtex/imgui_microtex/internal
+    thirdparty/imgui_microtex/MicroTeX
+    thirdparty/imgui_microtex/MicroTeX/lib
+    ${FREETYPE_INCLUDE_DIRS}
 )
+target_link_libraries(QC-LASER-ThirdParty PUBLIC Freetype::Freetype)
 
 add_executable(${PROJECT_NAME} ${APP_SOURCES})
 
