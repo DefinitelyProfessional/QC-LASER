@@ -12,7 +12,7 @@ Have a hands-on experience fiddling with the mathematical concepts of linear alg
 All hail ImGui the lightweight and minimalistic UI to make the most out of your expensive RAM for the real fun stuff that is, the esteemed Linear Algebra and Quantum Computing actions you'll be doing.
 
 #### [ImPlot](https://github.com/epezent/implot) v1.0 for plotting and visualizing data.
-
+#### [ImPlot3D](https://github.com/brenocq/implot3d) v0.4 for plotting and visualizing data - but 3D.
 #### [MicroTex](https://github.com/NanoMichael/MicroTeX) extracted from [Imgui Bundle](https://github.com/pthom/imgui_bundle) v1.92.801
 Long live open source.
 

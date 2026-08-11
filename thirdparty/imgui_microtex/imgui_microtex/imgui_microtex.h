@@ -26,7 +26,8 @@
 // Thread safety: all functions are protected by a mutex and can be called from any thread.
 
 namespace ImGuiMicroTeX {
-
+// Custom demo window not from imgui_bundle to test if features are working or not
+void ShowDemoWindow();
 // ============================================================================
 // TeX style
 // ============================================================================

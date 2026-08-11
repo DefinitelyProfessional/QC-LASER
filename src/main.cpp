@@ -10,6 +10,7 @@
 #include "imgui.h"
 #include "implot.h"
 #include "implot3d.h"
+#include "imgui_microtex.h"
 
 #define WIN32_LEAN_AND_MEAN // Trim down Windows header
 #include <windows.h>
@@ -106,6 +107,7 @@ int main() {
         ImGui::ShowDemoWindow();
         ImPlot::ShowDemoWindow();
         ImPlot3D::ShowDemoWindow();
+        ImGuiMicroTeX::ShowDemoWindow();
         // Unified rendering of all window elements
         win_manager.RenderAll();
         G_outputpool->execute_results();

@@ -1,6 +1,7 @@
 #include "ui-utilities/stage-utilities.hpp"
 
 // Resource ID definition
+#include "imgui_microtex.h"
 #include "implot3d.h"
 #include "ui-utilities/icon-resource.hpp"
 
@@ -79,6 +80,10 @@ void InitializeDirectories(fs::path& ROOT_DIR, fs::path& SAVED_DATA_DIR, fs::pat
     // Ensure assets directory exists
     ASSETS_DIR = ROOT_DIR / "assets";
     ensure_dir(ASSETS_DIR);
+
+    // Check if latex-res exists
+    fs::path LATEX_RES_DIR = ROOT_DIR / "assets" / "latex-res";
+    ensure_dir(LATEX_RES_DIR);
     // Ensure assets/fonts directory exists
     fs::path FONTS_DIR = ROOT_DIR / "assets" / "fonts";
     ensure_dir(FONTS_DIR);
@@ -207,6 +212,10 @@ GLFWwindow* InitializeUI(int width, int height, const char* TITLE, const fs::pat
     ImGui_ImplGlfw_InitForOpenGL(window, true);
     ImGui_ImplOpenGL3_Init("#version 330");
 
+    fs::path clm_path = ROOT / "assets" / "latex-res" / "latinmodern-math.clm1";
+    fs::path otf_path = ROOT / "assets" / "latex-res" / "latinmodern-math.otf";
+    ImGuiMicroTeX::Init(clm_path.string(), otf_path.string());
+
     // Extract and locate the imgui.ini to portable dist directory
     fs::path iniPath = ROOT / "imgui.ini";
     static std::string persistentIniPath = iniPath.string();
@@ -234,6 +243,8 @@ void EndRenderLoop(GLFWwindow* window, const ImVec4& clear_color) {
 }
 
 void ShutdownUI(GLFWwindow* window) {
+    ImGuiMicroTeX::Release(); // Release MicroTeX GPU textures BEFORE OpenGL context shutdown
+
     ImGui_ImplOpenGL3_Shutdown();
     ImGui_ImplGlfw_Shutdown();
 
