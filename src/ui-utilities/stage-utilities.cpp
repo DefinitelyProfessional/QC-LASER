@@ -1,6 +1,7 @@
 #include "ui-utilities/stage-utilities.hpp"
 
 // Resource ID definition
+#include "implot3d.h"
 #include "ui-utilities/icon-resource.hpp"
 
 // Initialize teh global font
@@ -149,6 +150,7 @@ GLFWwindow* InitializeUI(int width, int height, const char* TITLE, const fs::pat
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
     ImPlot::CreateContext(); // Create ImPlot context AFTER ImGui
+    ImPlot3D::CreateContext(); // Create ImPlot3D context AFTER ImGui
 
     // ImGui IO config duh
     ImGuiIO& io = ImGui::GetIO();
@@ -235,6 +237,7 @@ void ShutdownUI(GLFWwindow* window) {
     ImGui_ImplOpenGL3_Shutdown();
     ImGui_ImplGlfw_Shutdown();
 
+    ImPlot3D::DestroyContext(); // Destroy ImPlot3D context BEFORE ImGui
     ImPlot::DestroyContext(); // Destroy ImPlot context BEFORE ImGui
     ImGui::DestroyContext();
 

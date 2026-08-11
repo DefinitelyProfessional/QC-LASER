@@ -166,6 +166,12 @@ set(THIRDPARTY_SOURCES
     thirdparty/implot/implot.cpp
     thirdparty/implot/implot_demo.cpp
     thirdparty/implot/implot_items.cpp
+    thirdparty/implot3d/implot3d.h
+    thirdparty/implot3d/implot3d.cpp
+    thirdparty/implot3d/implot3d_demo.cpp
+    thirdparty/implot3d/implot3d_items.cpp
+    thirdparty/implot3d/implot3d_internal.h
+    thirdparty/implot3d/implot3d_meshes.cpp
 )
 # Collect the bundle of sourcecode for MicroTex 
 file(GLOB_RECURSE MICROTEX_SOURCES
@@ -182,12 +188,13 @@ add_library(QC-LASER-ThirdParty STATIC ${THIRDPARTY_SOURCES})
 target_include_directories(QC-LASER-ThirdParty PUBLIC
     thirdparty/imgui
     thirdparty/imgui/backends
-    thirdparty/implot
     thirdparty/imgui_microtex/imgui_microtex
     thirdparty/imgui_microtex/imgui_microtex/internal
     thirdparty/imgui_microtex/MicroTeX
     thirdparty/imgui_microtex/MicroTeX/lib
     ${FREETYPE_INCLUDE_DIRS}
+    thirdparty/implot
+    thirdparty/implot3d
 )
 target_link_libraries(QC-LASER-ThirdParty PUBLIC Freetype::Freetype)
 
@@ -198,7 +205,9 @@ target_include_directories(${PROJECT_NAME} PRIVATE
     ${HDF5_INCLUDE_DIRS}
     ${CMAKE_BINARY_DIR}
 )
-target_compile_definitions(${PROJECT_NAME} PRIVATE H5_BUILT_AS_STATIC_LIB)
+target_compile_definitions(${PROJECT_NAME} PRIVATE 
+    H5_BUILT_AS_STATIC_LIB
+)
 # ---------------------------------------------------------
 # COMPILER-SPECIFIC OPTIMIZATIONS
 # ---------------------------------------------------------

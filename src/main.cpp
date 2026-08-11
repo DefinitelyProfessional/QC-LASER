@@ -1,5 +1,6 @@
 #include "data-utilities/data-utilities.hpp"
 #include "data-utilities/data-payload.hpp"
+#include "implot3d.h"
 #include "ui-utilities/stage-utilities.hpp"
 #include "ui-utilities/ui-windows.hpp"
 #include "thread-core/thread-pool.hpp"
@@ -103,6 +104,7 @@ int main() {
         STAGE::StartRenderLoop();
         ImGui::ShowDemoWindow();
         ImPlot::ShowDemoWindow();
+        ImPlot3D::ShowDemoWindow();
         // Unified rendering of all window elements
         win_manager.RenderAll();
         G_outputpool->execute_results();
