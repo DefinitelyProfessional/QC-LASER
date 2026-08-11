@@ -9,6 +9,7 @@
 #include <GLFW/glfw3.h>
 #include "imgui.h"
 #include "implot.h"
+#include "implot3d.h"
 
 #define WIN32_LEAN_AND_MEAN // Trim down Windows header
 #include <windows.h>
