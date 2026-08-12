@@ -35,6 +35,7 @@ public:
 };
 
 
+namespace UI {
 // Global fonts system, to be initialized early in main 
 struct SimpleFonts {
     // Font pointers guaranteed to be non-null after init
@@ -49,6 +50,13 @@ struct SimpleFonts {
     void PushLarge();
     void Pop();
 };
+struct GlobalWindowFlags {
+    bool is_locked = false;
+    ImGuiWindowFlags flag = ImGuiWindowFlags_None;
 
-// Global instance accessible across ui-windows
+    void toggle_lock();
+};
+// Global instance accessible across ui-windows, instantiated in main through InitializeUI in stage utils
 extern SimpleFonts G_Fonts;
+extern GlobalWindowFlags G_WindowFlags;
+}

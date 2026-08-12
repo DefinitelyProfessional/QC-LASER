@@ -53,7 +53,7 @@ namespace STAGE {
     void StartRenderLoop();
 
     // Encapsulates the complete end of the render loop
-    void EndRenderLoop(GLFWwindow* window, const ImVec4& clear_color);
+    void EndRenderLoop(GLFWwindow* window, const ImVec4& background_color);
 
     // Encapsulates the complete memory cleanup n shutdown sequence
     void ShutdownUI(GLFWwindow* window);

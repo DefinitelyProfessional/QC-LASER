@@ -42,7 +42,7 @@ int main() {
     // IMGUI UI SUBSYSTEMS INITIALIZATION
     GLFWwindow* host_window = STAGE::InitializeUI(1500, 1000, "QC Linear Algebra Sandbox Engine R.", ROOT_DIR);
     if (!host_window) {std::cerr << "[Fatal Error] Failed to initialize application stages."; return -1;}
-    ImVec4 clear_color = ImVec4(0.12f, 0.12f, 0.14f, 1.00f);
+    ImVec4 background_color = ImVec4(0.12f, 0.12f, 0.14f, 1.00f);
 
 
     // Load the Default SandboxDataManager being "MAIN_sandbox.h5"
@@ -111,8 +111,11 @@ int main() {
         // Unified rendering of all window elements
         win_manager.RenderAll();
         G_outputpool->execute_results();
+        if (main_menu_bar->debug_metrics_is_open) {
+            ImGui::ShowMetricsWindow(&main_menu_bar->debug_metrics_is_open);
+        }
         // Finalize geometry and push to the GPU
-        STAGE::EndRenderLoop(host_window, clear_color);
+        STAGE::EndRenderLoop(host_window, background_color);
     }
 
 

@@ -17,8 +17,18 @@ void UIWindow::display_error_buffer() {
     }
 }
 
-
+namespace UI {
 void SimpleFonts::PushSmall()  {ImGui::PushFont(Small);}
 void SimpleFonts::PushMedium() {ImGui::PushFont(Medium);}
 void SimpleFonts::PushLarge()  {ImGui::PushFont(Large);}
 void SimpleFonts::Pop()        {ImGui::PopFont();}
+
+void GlobalWindowFlags::toggle_lock() {
+    is_locked = !is_locked;
+    if (is_locked) {
+        flag |= (ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize);
+    } else {
+        flag &= ~(ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize);
+    }
+}
+}

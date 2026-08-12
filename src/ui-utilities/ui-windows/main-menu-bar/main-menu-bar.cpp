@@ -27,43 +27,55 @@ MainMenuBar::MainMenuBar(
 void MainMenuBar::Render() {
     if (!ImGui::BeginMainMenuBar()) {return;}
 
-    //
+    // Data related functionalities
     if (ImGui::BeginMenu("DATA")) {
         ImGui::MenuItem("SANDBOX MANAGER", nullptr, &sandbox_manager_win->is_open);
         if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal)) {
             ImGui::SetTooltip("Manage sandbox files");
         }
-
         ImGui::MenuItem("MATH OBJECT EXPLORER", nullptr, &math_obj_explorer_win->is_open);
         if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal)) {
             ImGui::SetTooltip("Manage existing math objects");
         }
-
         ImGui::MenuItem("MATH OBJECT CREATOR", nullptr, &math_obj_creator_win->is_open);
         if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal)) {
             ImGui::SetTooltip("Create new math objects");
         }
-
         if (ImGui::MenuItem("close all")) {
             sandbox_manager_win->is_open = false;
             math_obj_explorer_win->is_open = false;
             math_obj_creator_win->is_open = false;
         }
-
         if (ImGui::MenuItem("open all")) {
             sandbox_manager_win->is_open = true;
             math_obj_explorer_win->is_open = true;
             math_obj_creator_win->is_open = true;
         }
-
         ImGui::EndMenu();
     }
+
+    // ImGui related functionalities
+    if (ImGui::BeginMenu("UI")) {
+        if (ImGui::BeginMenu("Color Theme")) {
+            if(ImGui::MenuItem("Dark Theme")) {ImGui::StyleColorsDark();}
+            if(ImGui::MenuItem("Light Theme")) {ImGui::StyleColorsLight();}
+            if(ImGui::MenuItem("Classic Theme")) {ImGui::StyleColorsClassic();}
+            ImGui::EndMenu();
+        }
+        if (ImGui::MenuItem("Debug Metrics", nullptr, debug_metrics_is_open)) {
+            debug_metrics_is_open = !debug_metrics_is_open;
+        }
+        if (ImGui::MenuItem("lock move & resize", nullptr, UI::G_WindowFlags.is_locked)) {
+            UI::G_WindowFlags.toggle_lock();
+        }
+        ImGui::EndMenu();
+    }
+
     ImGui::Text("   Using");
     ImGui::TextColored(
         ImVec4(1.0f,0.5f,0.0f,1.0f),
         "%s", sandbox_manager_win->get_active_filename().c_str()
     );
-
     sandbox_manager_win->save_current_active_button();
 
     ImGui::TextColored(

@@ -136,7 +136,8 @@ void SandboxManagerWindow::Render() {
     // Window settings
     ImGui::SetNextWindowSize(ImVec2(330, 400), ImGuiCond_FirstUseEver);
     ImGui::SetNextWindowPos(ImVec2(0, 26), ImGuiCond_FirstUseEver);
-    ImGui::Begin(window_name.c_str(), &is_open);
+    ImGuiWindowFlags final_flags = ImGuiWindowFlags_NoSavedSettings | UI::G_WindowFlags.flag;
+    ImGui::Begin(window_name.c_str(), &is_open, final_flags);
 
     // [TOP SECTION] Current Active and Create New
     ImGui::Text("Current Active Sandbox : ");

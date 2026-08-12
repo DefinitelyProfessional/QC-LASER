@@ -44,6 +44,12 @@
 
 namespace fs = std::filesystem;
 
+namespace UI {
+// INSTANTIATE GLOBAL DATASTRUCTS
+SimpleFonts G_Fonts; // To be initialized here
+GlobalWindowFlags G_WindowFlags;
+}
+
 namespace STAGE {
 // Public
 void WindowManager::RenderAll() {
@@ -110,12 +116,11 @@ static std::string GetFirstTTF(const fs::path& dirPath) {
     return ""; // No font file found in directory
 }
 
-// Internal GLFW error callback
+// Helper for internal GLFW error callback
 static void glfw_error_callback(int error, const char* description) {
     std::cerr << "[GLFW Error] " << error << ": " << description << std::endl;
 }
 
-SimpleFonts G_Fonts; // To be initialized here
 GLFWwindow* InitializeUI(int width, int height, const char* TITLE, const fs::path& ROOT) {
     glfwSetErrorCallback(glfw_error_callback);
     if (!glfwInit()) {return nullptr;}
@@ -163,8 +168,9 @@ GLFWwindow* InitializeUI(int width, int height, const char* TITLE, const fs::pat
     io.ConfigWindowsMoveFromTitleBarOnly = true;
     io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
     io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;
-    ImGui::StyleColorsDark();
 
+    // Default theme is dark theme
+    ImGui::StyleColorsDark();
 
     // Initialize Global Fonts
     ImFontConfig fontConfig;
@@ -174,7 +180,7 @@ GLFWwindow* InitializeUI(int width, int height, const char* TITLE, const fs::pat
     fontConfig.RasterizerMultiply = 1.15f; // Slightly boosts font contrast for dark theme
     io.Fonts->Clear();
     // Load ImGui's built-in font to guarantee atlas is never empty
-    G_Fonts.Fallback = io.Fonts->AddFontDefault();
+    UI::G_Fonts.Fallback = io.Fonts->AddFontDefault();
     // Discover first font file in each directory
     std::string smallPath  = GetFirstTTF("assets/fonts/small");
     std::string mediumPath = GetFirstTTF("assets/fonts/medium");
@@ -187,21 +193,21 @@ GLFWwindow* InitializeUI(int width, int height, const char* TITLE, const fs::pat
                 return loadedFont;
             }
         }
-        return G_Fonts.Fallback; // Use default if no file present or loading failed
+        return UI::G_Fonts.Fallback; // Use default if no file present or loading failed
     };
     // Load font tiers with target font sizes
-    G_Fonts.Small  = LoadFontOrDefault(smallPath, 13.0f);
-    G_Fonts.Medium = LoadFontOrDefault(mediumPath, 18.0f);
-    G_Fonts.Large  = LoadFontOrDefault(largePath, 20.0f);
+    UI::G_Fonts.Small  = LoadFontOrDefault(smallPath, 13.0f);
+    UI::G_Fonts.Medium = LoadFontOrDefault(mediumPath, 18.0f);
+    UI::G_Fonts.Large  = LoadFontOrDefault(largePath, 20.0f);
     // Setup fallbacks to imgui's default
-    if (!G_Fonts.Medium) G_Fonts.Medium = G_Fonts.Fallback;
-    if (!G_Fonts.Small)  G_Fonts.Small  = G_Fonts.Medium;
-    if (!G_Fonts.Large)  G_Fonts.Large  = G_Fonts.Medium;
+    if (!UI::G_Fonts.Medium) UI::G_Fonts.Medium = UI::G_Fonts.Fallback;
+    if (!UI::G_Fonts.Small)  UI::G_Fonts.Small  = UI::G_Fonts.Medium;
+    if (!UI::G_Fonts.Large)  UI::G_Fonts.Large  = UI::G_Fonts.Medium;
     // Set the medium size as the default global font
-    io.FontDefault = G_Fonts.Medium;
+    io.FontDefault = UI::G_Fonts.Medium;
     // Automatically scale all ImGui padding/spacing relative
     // from the standard 13px baseline to the Medium default 
-    if (io.FontDefault != G_Fonts.Fallback) {
+    if (io.FontDefault != UI::G_Fonts.Fallback) {
         ImGui::GetStyle().ScaleAllSizes(18.0f / 13.0f);
     }
     // Texture atlas will be built immidiately the line after this
@@ -231,12 +237,12 @@ void StartRenderLoop() {
     ImGui::NewFrame();
 }
 
-void EndRenderLoop(GLFWwindow* window, const ImVec4& clear_color) {
+void EndRenderLoop(GLFWwindow* window, const ImVec4& background_color) {
     ImGui::Render();
     int display_w, display_h;
     glfwGetFramebufferSize(window, &display_w, &display_h);
     glViewport(0, 0, display_w, display_h);
-    glClearColor(clear_color.x * clear_color.w, clear_color.y * clear_color.w, clear_color.z * clear_color.w, clear_color.w);
+    glClearColor(background_color.x * background_color.w, background_color.y * background_color.w, background_color.z * background_color.w, background_color.w);
     glClear(GL_COLOR_BUFFER_BIT);
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
     glfwSwapBuffers(window);
