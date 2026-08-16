@@ -6,9 +6,12 @@
 # cmake --build build_Release
 
 cmake_minimum_required(VERSION 3.20)
-project(QC-LASER CXX RC)
-set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
+project(QC-LASER 
+    VERSION 0.0.0
+    DESCRIPTION "Implementations of Linear Algebra concepts (and those relevant to Quantum Computing) made into a sandbox engine for experimental testing and learning purposes"
+    HOMEPAGE_URL "https://github.com/DefinitelyProfessional/QC-LASER"
+    LANGUAGES CXX RC
+)
 
 # CMake output compile_commands.json
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
@@ -201,6 +204,18 @@ target_include_directories(QC-LASER-ThirdParty PUBLIC
 target_link_libraries(QC-LASER-ThirdParty PUBLIC Freetype::Freetype)
 
 add_executable(${PROJECT_NAME} ${APP_SOURCES})
+
+# Force Third-Party library to compile in strict C++17 mode
+set_target_properties(QC-LASER-ThirdParty PROPERTIES
+    CXX_STANDARD 17
+    CXX_STANDARD_REQUIRED ON
+)
+
+# Force main project to compile in strict C++20 mode for TMP
+set_target_properties(${PROJECT_NAME} PROPERTIES
+    CXX_STANDARD 20
+    CXX_STANDARD_REQUIRED ON
+)
 
 target_include_directories(${PROJECT_NAME} PRIVATE
     src

@@ -13,7 +13,7 @@ All hail ImGui the lightweight and minimalistic UI to make the most out of your 
 
 #### [ImPlot](https://github.com/epezent/implot) v1.0 for plotting and visualizing data.
 #### [ImPlot3D](https://github.com/brenocq/implot3d) v0.4 for plotting and visualizing data - but 3D.
-#### [MicroTex](https://github.com/NanoMichael/MicroTeX) extracted from [Imgui Bundle](https://github.com/pthom/imgui_bundle) v1.92.801
+#### [MicroTex for ImGui](https://github.com/NanoMichael/MicroTeX) extracted from [Imgui Bundle](https://github.com/pthom/imgui_bundle) v1.92.801
 Long live open source.
 
 
